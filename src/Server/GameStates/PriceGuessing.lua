@@ -21,7 +21,7 @@ end
 local function PriceGuessing(system)
     return Promise.new(function(resolve)
         local replicatedRoundState = system:GetRoundStateContainer()
-        local scoreState = system:GetPointsStateContainer()
+        local scoreState = system:GetScoreStateContainer()
         local guessTime = system:GetGuessTime()
         local productData = system:PickNextProduct()
 

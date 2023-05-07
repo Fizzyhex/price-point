@@ -43,7 +43,7 @@ local function ProductIconDisplay()
             roundStateHook:Disconnect()
             frame:Destroy()
         end
-    end, { workspace })
+    end, ANCESTORS)
 end
 
 return ProductIconDisplay

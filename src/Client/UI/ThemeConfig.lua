@@ -47,19 +47,19 @@ THEME_COLORS.accent_contrast_header = {
 
 local FONT_FACES = {
     header = {
-        default = Font.fromName("Gotham", Enum.FontWeight.ExtraBold)
+        default = Font.fromName("GothamSSm", Enum.FontWeight.ExtraBold)
     },
 
     body = {
-        default = Font.fromName("Gotham", Enum.FontWeight.Regular)
+        default = Font.fromName("GothamSSm", Enum.FontWeight.Regular)
     },
 
     bold = {
-        default = Font.fromName("Gotham", Enum.FontWeight.Bold)
+        default = Font.fromName("GothamSSm", Enum.FontWeight.Bold)
     },
 
     medium = {
-        default = Font.fromName("Gotham", Enum.FontWeight.SemiBold)
+        default = Font.fromName("GothamSSm", Enum.FontWeight.SemiBold)
     },
 }
 

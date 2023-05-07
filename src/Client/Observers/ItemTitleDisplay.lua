@@ -74,7 +74,7 @@ local function ItemTitleDisplay()
             roundStateHook:Disconnect()
             frame:Destroy()
         end
-    end, { workspace })
+    end, ANCESTORS)
 end
 
 return ItemTitleDisplay

@@ -104,7 +104,7 @@ local function PriceRevealDisplay()
             stopObservingRoundState()
             frame:Destroy()
         end
-    end, { workspace })
+    end, ANCESTORS)
 end
 
 return PriceRevealDisplay

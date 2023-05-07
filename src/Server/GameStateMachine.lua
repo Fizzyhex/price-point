@@ -1,4 +1,5 @@
 local MarketplaceService = game:GetService("MarketplaceService")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
@@ -10,14 +11,26 @@ local PlayerGuessRecorder = require(ServerStorage.Server.PlayerGuessRecorder)
 
 local GameStates = require(ServerStorage.Server.GameStates)
 local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
+local Red = require(ReplicatedStorage.Packages.Red)
 
 local gameRules = ReplicatedStorage.Assets.Configuration.GameRules
 local logger = CreateLogger(script)
+local scoreboardNetwork = Red.Server(NetworkNamespaces.SCOREBOARD)
 
 local RANDOM = Random.new()
 local DEFAULT_STATS = {
     score = 0
 }
+
+local function CreateInitialScoreboard(players: {Player})
+    local scores = {}
+
+    for _, player in players do
+        scores[player.UserId] = 0
+    end
+
+    return scores
+end
 
 local function GetValueKey(dict: table, term: string)
     for key, value in dict do
@@ -64,6 +77,10 @@ end
 
 function GameStateMachine:GetCurrentProduct()
     return self._currentProduct
+end
+
+function GameStateMachine:ResortScoreboards()
+    scoreboardNetwork:FireAll("Resort")
 end
 
 function GameStateMachine:GetStateByName(name: string)
@@ -126,6 +143,7 @@ end
 
 function GameStateMachine:Start(endCallback)
     local isRunning = true
+    self._scoreStateContainer:Patch(CreateInitialScoreboard(Players:GetPlayers()))
 
     task.spawn(function()
         local currentState = GameStates.Intermission
@@ -156,13 +174,11 @@ end
 
 function GameStateMachine.new(roundStateContainer, scoreStateContainer, productPools)
     local self = setmetatable({}, GameStateMachine)
-
     self._roundStateContainer = roundStateContainer
     self._scoreStateContainer = scoreStateContainer
     self._productPools = productPools
     self._roundsRemaining = assert(gameRules:GetAttribute("rounds"), "'rounds' game rule is not set")
     self._guesses = {}
-
     return self
 end
 

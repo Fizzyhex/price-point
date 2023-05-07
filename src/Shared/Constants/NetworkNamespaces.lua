@@ -1,7 +1,8 @@
 local NETWORK_NAMESPACES = {
     ROUND_STATE_CONTAINER = "RoundState",
     SCORE_STATE_CONTAINER = "ScoreState",
-    GUESS_SUBMISSION = "Guess"
+    GUESS_SUBMISSION = "Guess",
+    SCOREBOARD = "Scoreboard"
 }
 
 return NETWORK_NAMESPACES
