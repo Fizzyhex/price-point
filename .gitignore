@@ -1,0 +1,9 @@
+# Project place file
+/price-point.rbxlx
+
+# Roblox Studio lock files
+/*.rbxlx.lock
+/*.rbxl.lock
+
+# Wally packages
+Packages

@@ -1,0 +1,40 @@
+{
+  "name": "price-point-v2",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "Packages": {
+        "$path": "Packages"
+      },
+
+      "Client": {
+        "$path": "src/Client"
+      },
+
+      "Shared": {
+        "$path": "src/Shared"
+      }
+    },
+
+    "ServerStorage": {
+      "Server": {
+        "$path": "src/Server"
+      }
+    },
+
+    "ServerScriptService": {
+      "ServerScript": {
+        "$path": "src/ServerScript.server.lua"
+      }
+    },
+
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "ClientScript": {
+          "$path": "src/ClientScript.client.lua"
+        }
+      }
+    }
+  }
+}

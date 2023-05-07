@@ -1,0 +1,7 @@
+local NETWORK_NAMESPACES = {
+    ROUND_STATE_CONTAINER = "RoundState",
+    SCORE_STATE_CONTAINER = "ScoreState",
+    GUESS_SUBMISSION = "Guess"
+}
+
+return NETWORK_NAMESPACES
