@@ -22,6 +22,10 @@ local ANCESTORS = { workspace }
 
 local sleep = Promise.promisify(task.wait)
 
+local function Round(x)
+    return math.floor(x + 0.5)
+end
+
 local function PriceRevealDisplay()
     return Observers.observeTag("PriceRevealDisplay", function(parent: Instance)
         local ui = Value(nil)
@@ -38,6 +42,10 @@ local function PriceRevealDisplay()
             local backgroundColor = Value("background")
             local textColor = Value(ThemeProvider:GetColor("header"):get())
             local textColorSpring = Spring(textColor, 10)
+            local displayRevealPrice = Value(false)
+            local revealPriceSpring = Spring(Computed(function()
+                return if displayRevealPrice:get() then revealPrice:get() else 0
+            end), 5)
 
             if animationPromise then
                 animationPromise:cancel()
@@ -55,7 +63,13 @@ local function PriceRevealDisplay()
                     Header {
                         Size = UDim2.fromScale(1, 1),
                         AutomaticSize = Enum.AutomaticSize.None,
-                        Text = text,
+                        Text = Computed(function()
+                            if displayRevealPrice:get() then
+                                return `R${Round(revealPriceSpring:get())}`
+                            else
+                                return text:get()
+                            end
+                        end),
                         TextColor3 = textColorSpring,
                         TextScaled = true,
                     },
@@ -67,6 +81,7 @@ local function PriceRevealDisplay()
             local function Reveal()
                 backgroundColor:set("accent")
                 textColor:set(ThemeProvider:GetColor("accent_contrast_header"):get())
+                displayRevealPrice:set(true)
                 text:set(`R${revealPrice:get()}!`)
             end
 

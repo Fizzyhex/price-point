@@ -38,8 +38,8 @@ local function ScoreboardEntry(props)
     local playerName = props.PlayerName
     local avatar = props.Avatar
 
-    local defaultScoreColor = ThemeProvider:GetColor("body")
-    local increasingScoreColor = ThemeProvider:GetColor("accent")
+    local defaultBackgroundColor = ThemeProvider:GetColor("background")
+    local increasingBackgroundColor = ThemeProvider:GetColor("accent")
 
     local isTickVisible = Computed(function()
         return Unwrap(isReady) and Unwrap(guess) == nil
@@ -48,26 +48,27 @@ local function ScoreboardEntry(props)
     local scoreSpring = Spring(Computed(function()
         local currentScore = Unwrap(score) or 0
         return currentScore
-    end))
+    end), 10)
 
     local animatedScoreRounded = Computed(function()
         return Round(scoreSpring:get())
     end)
 
-    local scoreColor = Spring(Computed(function()
+    local backgroundColor = Spring(Computed(function()
         local currentScore = Unwrap(score) or 0
         local scoreSpringValue = scoreSpring:get()
         local percentage = 1 - (scoreSpringValue / currentScore)
 
         if scoreSpringValue < currentScore then
-            return defaultScoreColor:get():Lerp(increasingScoreColor:get(), percentage)
+            return defaultBackgroundColor:get():Lerp(increasingBackgroundColor:get(), percentage)
         else
-            return defaultScoreColor:get()
+            return defaultBackgroundColor:get()
         end
     end), 20)
 
     local entry = Background {
         Name = "ScoreboardEntry",
+        BackgroundColor3 = backgroundColor,
 
         [Children] = {
             ShorthandPadding { Padding = UDim.new(0, 6) },
@@ -86,8 +87,6 @@ local function ScoreboardEntry(props)
                         Name = "Score",
 
                         LayoutOrder = 1,
-
-                        TextColor3 = scoreColor,
                         Text = animatedScoreRounded,
                         TextScaled = true,
 

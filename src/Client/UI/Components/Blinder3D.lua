@@ -10,6 +10,7 @@ local Children = Fusion.Children
 local Cleanup = Fusion.Cleanup
 local Value = Fusion.Value
 local Observer = Fusion.Observer
+local Hydrate = Fusion.Hydrate
 
 local DEFAULT_ANIMATION_SPEED = 0.5
 
@@ -98,7 +99,8 @@ local function Blinder3D(props: {Part: BasePart, Display: any})
         lastDisplay:set(props.Display:get())
     end
 
-    ui = (props.SurfaceGui or New("SurfaceGui")) {
+    local surfaceGui = Unwrap(props.SurfaceGui) or New("SurfaceGui")
+    ui = Hydrate(surfaceGui) {
         PixelsPerStud = props.PixelsPerStud,
         Face = Enum.NormalId.Front,
         Parent = Unwrap(props.Part),

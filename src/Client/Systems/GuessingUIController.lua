@@ -53,6 +53,21 @@ function GuessingUIController:OnStart()
         return true
     end
 
+    local function SubmitGuess()
+        if not isGuessingAvailable:get() then
+            return
+        end
+
+        local guess = tonumber(currentGuess:get())
+        print("Guess:", guess)
+
+        if ValidateGuess(guess) then
+            print("Submitted guess", guess)
+            guessNetwork:Call("Submit", guess)
+            isGuessingAvailable:set(false)
+        end
+    end
+
     RoundStateContainer:Observe(function(oldState, newState)
         if oldState.guessingEnabled == newState.guessingEnabled then
             return
@@ -77,6 +92,13 @@ function GuessingUIController:OnStart()
                             TextFilters.Max(gameRules:GetAttribute("maxGuess")),
                             TextFilters.WholeNumber()
                         },
+
+                        OnFocusLost = function(enterPressed)
+                            if enterPressed then
+                                SubmitGuess()
+                            end
+                        end,
+
                         [Out "Text"] = currentGuess
                     },
 
@@ -84,20 +106,7 @@ function GuessingUIController:OnStart()
                         Text = "Submit!",
                         LayoutOrder = 2,
                         Name = "SubmitButton",
-                        OnClick = function()
-                            if not isGuessingAvailable:get() then
-                                return
-                            end
-
-                            local guess = tonumber(currentGuess:get())
-                            print("Guess:", guess)
-
-                            if ValidateGuess(guess) then
-                                print("Submitted guess", guess)
-                                guessNetwork:Call("Submit", guess)
-                                isGuessingAvailable:set(false)
-                            end
-                        end
+                        OnClick = SubmitGuess
                     },
 
                     HorizontalListLayout { Padding = UDim.new(0, 12) },

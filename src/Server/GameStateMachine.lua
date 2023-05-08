@@ -42,16 +42,6 @@ local function GetValueKey(dict: table, term: string)
     return nil
 end
 
-local function GenerateDefaultStats(players: {Player})
-    local dict = {}
-
-    for _, player in players do
-        dict[player.UserId] = DEFAULT_STATS
-    end
-
-    return dict
-end
-
 local GameStateMachine = {}
 GameStateMachine.__index = GameStateMachine
 
@@ -88,16 +78,28 @@ function GameStateMachine:GetStateByName(name: string)
 end
 
 function GameStateMachine:OpenGuessing()
-    self._stopCollectingGuesses = PlayerGuessRecorder()
+    if self._stopCollectingGuesses then
+        return
+    end
+
+    self._stopCollectingGuesses = PlayerGuessRecorder(function(player, guess)
+        self._guessStateContainer:Patch({[player.UserId] = true})
+    end)
+end
+
+function GameStateMachine:RevealGuesses()
+    self._guessStateContainer:Patch(self:GetGuesses())
 end
 
 function GameStateMachine:CloseGuessing()
     if self._stopCollectingGuesses then
         self._guesses = self._stopCollectingGuesses()
+        self._stopCollectingGuesses = nil
     end
 end
 
 function GameStateMachine:ClearGuesses()
+    self._guessStateContainer:Clear()
     table.clear(self._guesses)
 end
 
@@ -130,7 +132,7 @@ function GameStateMachine:_GetRandomProduct()
     end)
 
     if not ok then
-        logger.error(`Failed to fetch marketplace info for {productData.id}: {marketplaceInfo}`)
+        logger.warn(`Failed to fetch marketplace info for {productData.id}: {marketplaceInfo}`)
         task.wait(0.5)
         return self:_GetRandomProduct(self._productPools)
     end
@@ -172,10 +174,11 @@ function GameStateMachine:Start(endCallback)
     end
 end
 
-function GameStateMachine.new(roundStateContainer, scoreStateContainer, productPools)
+function GameStateMachine.new(roundStateContainer, scoreStateContainer, guessStateContainer, productPools)
     local self = setmetatable({}, GameStateMachine)
     self._roundStateContainer = roundStateContainer
     self._scoreStateContainer = scoreStateContainer
+    self._guessStateContainer = guessStateContainer
     self._productPools = productPools
     self._roundsRemaining = assert(gameRules:GetAttribute("rounds"), "'rounds' game rule is not set")
     self._guesses = {}

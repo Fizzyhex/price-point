@@ -4,7 +4,7 @@ local NetworkNamespaces = require(ReplicatedStorage.Shared.Constants.NetworkName
 
 local Red = require(ReplicatedStorage.Packages.Red)
 
-local function PlayerGuessRecorder()
+local function PlayerGuessRecorder(onGuessCallback: (player: Player, guess: number) -> ())
     local network = Red.Server(NetworkNamespaces.GUESS_SUBMISSION, {"Submit"})
     local guesses = {}
 
@@ -18,6 +18,10 @@ local function PlayerGuessRecorder()
         end
 
         guesses[player.UserId] = guess
+
+        if onGuessCallback then
+            onGuessCallback(player, guess)
+        end
     end)
 
     -- Stops recording guesses and outputs a dict of UserIds corresponding with guesses

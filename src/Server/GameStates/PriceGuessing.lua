@@ -21,12 +21,10 @@ end
 local function PriceGuessing(system)
     return Promise.new(function(resolve)
         local replicatedRoundState = system:GetRoundStateContainer()
-        local scoreState = system:GetScoreStateContainer()
         local guessTime = system:GetGuessTime()
         local productData = system:PickNextProduct()
 
         replicatedRoundState:Clear()
-        scoreState:Clear()
 
         local id = productData.Id or productData.AssetId
         local assetType: EnumItem? = AssetTypeIdToEnum(productData.AssetTypeId)
@@ -57,22 +55,13 @@ local function PriceGuessing(system)
 
         local preview =
             if productData.BundleType
-            then MarketplacePreviewUtil.GetHumanoidDescriptionFromBundleId(id)
+            then MarketplacePreviewUtil.CreateBundlePreviewFromId(id)
             elseif productData.AssetId then MarketplacePreviewUtil.CreateAssetPreviewFromId(id)
             else nil
 
-        local isHumanoidDescription = preview and preview:IsA("HumanoidDescription")
-
         if preview then
             for _, component in ServerItemProjector:GetAll() do
-                if isHumanoidDescription then
-                    component:SetModel(
-                        MarketplacePreviewUtil.bundlePreviewCharacterPrefab:Clone(),
-                        preview
-                    )
-                else
-                    component:SetModel(preview:Clone())
-                end
+                component:SetModel(preview:Clone())
             end
         end
 

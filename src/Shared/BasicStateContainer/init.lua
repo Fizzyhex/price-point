@@ -45,7 +45,20 @@ function BasicStateContainer:Patch(patch)
 
     self._currentState = newState
     self.onStateChanged:Fire(oldState, newState)
+    self:_fireObservers(oldState, newState)
 
+    return newState
+end
+
+function BasicStateContainer:Clear()
+    local oldState = self._currentState
+    local newState = {}
+    self._currentState = newState
+    self.onStateChanged:Fire(oldState, newState)
+    self:_fireObservers(oldState, newState)
+end
+
+function BasicStateContainer:_fireObservers(oldState, newState)
     for key, callback in self._observers do
         task.spawn(function()
             if self._observers[key] then
@@ -53,19 +66,10 @@ function BasicStateContainer:Patch(patch)
             end
         end)
     end
-
-    return newState
-end
-
-function BasicStateContainer:Clear()
-    local oldState = self._currentState
-    local newState = table.freeze({})
-    self._currentState = newState
-    self.onStateChanged:Fire(oldState, newState)
 end
 
 function BasicStateContainer:GetAll()
-    return self._currentState
+    return table.clone(self._currentState)
 end
 
 function BasicStateContainer:Get(key: any, defaultValue: any?)

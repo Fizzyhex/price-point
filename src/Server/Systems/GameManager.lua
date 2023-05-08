@@ -34,6 +34,9 @@ function GameManager:OnStart()
     StateReplicator(NetworkNamespaces.ROUND_STATE_CONTAINER, roundStateContainer)
     local scoreStateContainer = BasicStateContainer.new()
     StateReplicator(NetworkNamespaces.SCORE_STATE_CONTAINER, scoreStateContainer)
+    local guessStateContainer = BasicStateContainer.new()
+    StateReplicator(NetworkNamespaces.GUESS_STATE_CONTAINER, guessStateContainer)
+
     productPools = MakeProductPools()
 
     local function RunGame()
@@ -41,6 +44,7 @@ function GameManager:OnStart()
         return GameStateMachine.new(
             roundStateContainer,
             scoreStateContainer,
+            guessStateContainer,
             productPools
         ):Start(function()
             logger.print("Starting a new game")

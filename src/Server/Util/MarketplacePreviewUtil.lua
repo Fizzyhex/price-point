@@ -1,7 +1,9 @@
+local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ServerStorage = game:GetService("ServerStorage")
 local InsertService = game:GetService("InsertService")
 local AssetService = game:GetService("AssetService")
+local ServerStorage = game:GetService("ServerStorage")
 
 local catalogModels = ServerStorage.Assets.CatalogModels
 
@@ -23,6 +25,10 @@ local function RecursivelyDisableScripts(subject: Instance)
     for _, child in subject:GetChildren() do
         RecursivelyDisableScripts(child)
     end
+end
+
+local function GetAnimator(humanoid: Humanoid)
+    return humanoid:FindFirstChildWhichIsA("Animator") or Instance.new("Animator", humanoid)
 end
 
 local MarketplacePreviewUtil = {}
@@ -68,6 +74,46 @@ function MarketplacePreviewUtil.GetHumanoidDescriptionFromBundleId(bundleId: num
     end
 
     return humanoidDescription
+end
+
+function MarketplacePreviewUtil.CreateBundlePreview(bundleDetails): Model
+    local character
+
+    if bundleDetails.BundleType == "AvatarAnimations" then
+        character = catalogModels.Mannequin:Clone()
+        local animationPackFolder = Instance.new("Folder")
+        animationPackFolder.Name = "AnimationPack"
+        CollectionService:AddTag(animationPackFolder, "AnimationCycler")
+
+        for _, item in bundleDetails.Items or {} do
+            if item.Type == "Asset" then
+                local animation = Instance.new("Animation")
+                animation.Name = item.Name
+                animation.Parent = animationPackFolder
+            end
+        end
+
+        animationPackFolder.Parent = GetAnimator(character.Humanoid)
+    else
+        character = catalogModels.BundlePreviewCharacter:Clone()
+        local humanoidDescription = MarketplacePreviewUtil.GetHumanoidDescriptionFromBundleId(bundleDetails.Id)
+
+        if humanoidDescription then
+            -- You can only apply HumanoidDescriptions to descendants of a DataModel
+            character.Parent = ServerStorage
+            character.Humanoid:ApplyDescription(humanoidDescription)
+            character.Parent = nil
+        end
+
+        return character
+    end
+
+    if not character then
+        warn(`Failed to load character for bundle id {bundleDetails.Id}`, bundleDetails)
+        return nil
+    end
+
+    return character
 end
 
 function MarketplacePreviewUtil.CreateAssetPreview(asset: Instance)
@@ -134,12 +180,29 @@ function MarketplacePreviewUtil.CreateAssetPreviewFromId(assetId: number)
         if ok then
             asset = if result then result:GetChildren()[1] else nil
         else
-            warn(`Failed to fetch asset ({assetId}) with InsertService: {result}`)
+            warn(`Failed to fetch asset ({assetId}) using InsertService: {result}`)
             return nil
         end
     end
 
     return if asset then MarketplacePreviewUtil.CreateAssetPreview(asset) else nil
+end
+
+function MarketplacePreviewUtil.CreateBundlePreviewFromId(bundleId: number)
+    local bundleDetails: Instance?
+
+    do
+        local ok, result = pcall(AssetService.GetBundleDetailsAsync, AssetService, bundleId)
+
+        if ok then
+            bundleDetails = result
+        else
+            warn(`Failed to fetch bundle details ({bundleId}) using AssetService: {result}`)
+            return nil
+        end
+    end
+
+    return if bundleDetails then MarketplacePreviewUtil.CreateAssetPreview(bundleDetails) else nil
 end
 
 return MarketplacePreviewUtil

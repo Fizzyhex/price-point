@@ -10,13 +10,14 @@ local Observer = Fusion.Observer
 local Cleanup = Fusion.Cleanup
 local Spring = Fusion.Spring
 local Computed = Fusion.Computed
+local OnEvent = Fusion.OnEvent
 
 local ThemeProvider = require(ReplicatedStorage.Client.UI.Util.ThemeProvider)
 local StripProps = require(ReplicatedStorage.Client.UI.Util.StripProps)
 local Unwrap = require(ReplicatedStorage.Client.UI.Util.Unwrap)
 local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.ShorthandPadding)
 
-local STRIPPED_PROPS = { "TextFilters" }
+local STRIPPED_PROPS = { "TextFilters", "OnFocusLost" }
 
 local function TextBox(props)
     local lastValidText = Value("")
@@ -24,6 +25,7 @@ local function TextBox(props)
     local textFilters = props.TextFilters
     local invalidInputFlag = Value(false)
     local accentColor
+    local onFocusLost = props.OnFocusLost
     accentColor = Spring(Computed(function()
         if invalidInputFlag:get() then
             invalidInputFlag:set(false)
@@ -74,6 +76,12 @@ local function TextBox(props)
 
         AutomaticSize = props.AutomaticSize or Enum.AutomaticSize.XY,
         Size = props.Size or UDim2.fromOffset(200, 0),
+
+        [OnEvent "FocusLost"] = function(...)
+            if onFocusLost then
+                onFocusLost(...)
+            end
+        end,
 
         -- Two-way binding
         Text = text,

@@ -26,7 +26,7 @@ local function OrderedScoreIterator(scores: table, iteratorFn: (key: any, value:
     end
 
     table.sort(orderedScores, function(a, b)
-        return a[1] > b[1]
+        return a[2] > b[2]
     end)
 
     for _, value in orderedScores do
@@ -43,6 +43,9 @@ local function AwardPoints(system)
 
         logger.print("Old scores:", scoreStateContainer:GetAll())
 
+        system:RevealGuesses()
+        task.wait(2)
+
         OrderedScoreIterator(finalGuesses, function(playerId: number, guess: number)
             local player = Players:GetPlayerByUserId(playerId)
 
@@ -50,11 +53,18 @@ local function AwardPoints(system)
                 return
             end
 
-            local reward = 100 / PercentageDistance(guess, price)
+            local reward = 100 * PercentageDistance(guess, price)
+
+            -- Prevent against NaN errors, as we have the potential to divide by zero here
+            if reward ~= reward then
+                reward = 0
+            end
 
             if price == guess then
-                reward = Round(reward * 1.5)
+                reward = reward * 1.5
             end
+
+            reward = Round(reward)
 
             if reward ~= 0 then
                 local currentScore = scoreStateContainer:Get(playerId, 0)
@@ -70,8 +80,10 @@ local function AwardPoints(system)
             end
         end)
 
+        task.wait(1)
         system:ResortScoreboards()
         logger.print("New scores:", scoreStateContainer:GetAll())
+        task.wait(2)
 
         resolve(system:GetStateByName("NextRound"))
     end)
