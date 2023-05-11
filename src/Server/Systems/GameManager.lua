@@ -2,22 +2,47 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
 local BasicStateContainer = require(ReplicatedStorage.Shared.BasicStateContainer)
-local MatchHandler = require(ServerStorage.Server.MatchHandler)
 local AvatarShopData = require(ServerStorage.Server.AvatarShopData)
 local RandomPool = require(ReplicatedStorage.Shared.RandomPool)
 local StateReplicator = require(ServerStorage.Server.StateReplicator)
 local NetworkNamespaces = require(ReplicatedStorage.Shared.Constants.NetworkNamespaces)
-local MatchConfig = require(ServerStorage.Server.Types.MatchConfig)
 local CreateLogger = require(ReplicatedStorage.Shared.CreateLogger)
-local GetReplicationBin = require(ReplicatedStorage.Shared.GetReplicationBin)
 local GameStateMachine = require(ServerStorage.Server.GameStateMachine)
 
 local logger = CreateLogger(script)
+
+local USE_TEST_PRODUCTS = false
+local TEST_PRODUCTS = {
+    -- {
+    --     -- Werewolf animation pack
+    --     id = 32,
+    --     itemType = "Bundle",
+    --     price = 500
+    -- },
+
+    -- {
+    --     -- Sun Kissed Freckles (dynamic head)
+    --     id = 964,
+    --     itemType = "Bundle",
+    --     price = 200
+    -- },
+
+    {
+        -- Canvas Shoes - Pink (bundle of shoes)
+        id = 877,
+        itemType = "Bundle",
+        price = 50
+    },
+}
 
 local function MakeProductPools()
     local productPools = {}
 
     for category, productIds in AvatarShopData do
+        if USE_TEST_PRODUCTS then
+            productIds = TEST_PRODUCTS
+        end
+
         productPools[category] = RandomPool.new(productIds)
     end
 
@@ -36,6 +61,10 @@ function GameManager:OnStart()
     StateReplicator(NetworkNamespaces.SCORE_STATE_CONTAINER, scoreStateContainer)
     local guessStateContainer = BasicStateContainer.new()
     StateReplicator(NetworkNamespaces.GUESS_STATE_CONTAINER, guessStateContainer)
+
+    if USE_TEST_PRODUCTS then
+        logger.warn("Test products are being used.")
+    end
 
     productPools = MakeProductPools()
 

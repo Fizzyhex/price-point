@@ -11,20 +11,22 @@ local function AnimationCycler()
     return Observers.observeTag("AnimationCycler", function(container: Folder)
         local animator: Animator = container.Parent
         
-        if not container.Parent:IsA("Animator") then
+        if not animator:IsA("Animator") then
             error("AnimationCyclers must be parented to an Animator object")
         end
 
         local binAdd, binEmpty = Bin()
 
         local cycleThread = task.spawn(function()
-            local index = 0
+            local animationIndex = 0
             local animationTracks = {}
+            local animations = {}
             local lastAnimationTrack: AnimationTrack
 
             local function UpdateAnimationTracks()
                 for _, child in container:GetChildren() do
                     if child:IsA("Animation") and animationTracks[child] == nil then
+                        table.insert(animations, child)
                         animationTracks[child] = animator:LoadAnimation(child)
                     end
                 end
@@ -32,6 +34,7 @@ local function AnimationCycler()
 
             binAdd(container.ChildAdded:Connect(function(child)
                 if child:IsA("Animation") then
+                    table.insert(animations, child)
                     animationTracks[child] = animator:LoadAnimation(child)
                 end
             end))
@@ -40,32 +43,37 @@ local function AnimationCycler()
                 if animationTracks[child] then
                     animationTracks[child]:Destroy()
                     animationTracks[child] = nil
+
+                    for index, value in animations do
+                        if value == child then
+                            table.remove(animations, index)
+                            break
+                        end
+                    end
                 end
             end))
 
             UpdateAnimationTracks()
 
             while true do
-                if not next(animationTracks) then
+                if #animations == 0 then
                     task.wait()
                     continue
                 end
 
-                index += 1
+                animationIndex += 1
 
-                local isOutOfRange, animationTrack = pcall(function()
-                    return next(animationTracks, if index == 1 then nil else index - 1)
-                end)
-
-                if isOutOfRange then
-                    index = 1
-                    continue
+                if animationIndex > #animations then
+                    animationIndex = 1
                 end
+
+                local animationTrack = animationTracks[animations[animationIndex]]
 
                 if lastAnimationTrack then
                     lastAnimationTrack:Stop(0)
                 end
 
+                print("Playing", animationTrack)
                 animationTrack:Play(0)
 
                 task.wait(CYCLE_SPEED)

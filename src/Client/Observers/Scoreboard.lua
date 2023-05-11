@@ -3,16 +3,17 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Observers = require(ReplicatedStorage.Packages.Observers)
 local Red = require(ReplicatedStorage.Packages.Red)
+local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Value = Fusion.Value
+local Hydrate = Fusion.Hydrate
 
 local ScoreStateContainer = require(ReplicatedStorage.Client.StateContainers.ScoreStateContainer)
 local GuessStateContainer = require(ReplicatedStorage.Client.StateContainers.GuessStateContainer)
 local Blinder3D = require(ReplicatedStorage.Client.UI.Components.Blinder3D)
 local ScoreboardEntry = require(ReplicatedStorage.Client.UI.Components.ScoreboardEntry)
 local NetworkNamespaces = require(ReplicatedStorage.Shared.Constants.NetworkNamespaces)
-local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 
 local ANCESTORS = { workspace }
 

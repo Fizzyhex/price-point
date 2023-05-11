@@ -1,12 +1,8 @@
-local ServerStorage = game:GetService("ServerStorage")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
 local Promise = require(ReplicatedStorage.Packages.Promise)
-local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
-
 local CreateLogger = require(ReplicatedStorage.Shared.CreateLogger)
-local MatchConfig = require(ServerStorage.Server.Types.MatchConfig)
 
 local logger = CreateLogger(script)
 
@@ -74,7 +70,6 @@ local function AwardPoints(system)
                 })
 
                 logger.print(`Rewarded {player} with {reward}, new score is {newScore}`)
-
                 task.wait(waitTime)
                 waitTime = math.max(waitTime - 0.05, 0.2)
             end

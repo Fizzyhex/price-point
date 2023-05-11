@@ -3,8 +3,6 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
-local BasicStateContainer = require(ReplicatedStorage.Shared.BasicStateContainer)
-local StateReplicator = require(ServerStorage.Server.StateReplicator)
 local NetworkNamespaces = require(ReplicatedStorage.Shared.Constants.NetworkNamespaces)
 local CreateLogger = require(ReplicatedStorage.Shared.CreateLogger)
 local PlayerGuessRecorder = require(ServerStorage.Server.PlayerGuessRecorder)
@@ -18,9 +16,6 @@ local logger = CreateLogger(script)
 local scoreboardNetwork = Red.Server(NetworkNamespaces.SCOREBOARD)
 
 local RANDOM = Random.new()
-local DEFAULT_STATS = {
-    score = 0
-}
 
 local function CreateInitialScoreboard(players: {Player})
     local scores = {}
@@ -45,16 +40,20 @@ end
 local GameStateMachine = {}
 GameStateMachine.__index = GameStateMachine
 
-function GameStateMachine:GetGuessTime()
-    return 10
+function GameStateMachine:GetGuessingTime()
+    return gameRules:GetAttribute("guessingTime")
 end
 
 function GameStateMachine:GetRounds()
-    return 5
+    return gameRules:GetAttribute("rounds")
 end
 
-function GameStateMachine:GetIntermissionLength()
-    return 3
+function GameStateMachine:GetIntermissionTime()
+    return gameRules:GetAttribute("intermissionTime")
+end
+
+function GameStateMachine:GetConclusionTime()
+    return gameRules:GetAttribute("conclusionTime")
 end
 
 function GameStateMachine:GetRoundStateContainer()
@@ -77,13 +76,17 @@ function GameStateMachine:GetStateByName(name: string)
     return assert(GameStates[name], `State "{name} was not found within the GameState dictionary"`)
 end
 
-function GameStateMachine:OpenGuessing()
+function GameStateMachine:OpenGuessing(callback)
     if self._stopCollectingGuesses then
         return
     end
 
     self._stopCollectingGuesses = PlayerGuessRecorder(function(player, guess)
         self._guessStateContainer:Patch({[player.UserId] = true})
+
+        if callback then
+            callback(player, guess)
+        end
     end)
 end
 
@@ -121,6 +124,10 @@ function GameStateMachine:DecreaseRoundsRemaining()
     self._roundsRemaining -= 1
 end
 
+function GameStateMachine:GetActivePlayers()
+    return Players:GetPlayers()
+end
+
 function GameStateMachine:_GetRandomProduct()
     local categories = TableUtil.Keys(self._productPools)
     local randomCategory = categories[RANDOM:NextInteger(1, #categories)]
@@ -145,7 +152,7 @@ end
 
 function GameStateMachine:Start(endCallback)
     local isRunning = true
-    self._scoreStateContainer:Patch(CreateInitialScoreboard(Players:GetPlayers()))
+    self._scoreStateContainer:Patch(CreateInitialScoreboard(self:GetActivePlayers()))
 
     task.spawn(function()
         local currentState = GameStates.Intermission

@@ -1,9 +1,7 @@
-local ServerStorage = game:GetService("ServerStorage")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Promise = require(ReplicatedStorage.Packages.Promise)
 local CreateLogger = require(ReplicatedStorage.Shared.CreateLogger)
-local MatchConfig = require(ServerStorage.Server.Types.MatchConfig)
 
 local logger = CreateLogger(script)
 
@@ -21,7 +19,7 @@ local function PriceReveal(system)
         system:CloseGuessing()
         logger.print("Final guesses are in!", finalGuesses)
 
-        task.wait(6)
+        task.wait(7)
         logger.print("Reveal over")
 
         resolve(system:GetStateByName("AwardPoints"))

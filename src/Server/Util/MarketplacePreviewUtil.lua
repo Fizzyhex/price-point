@@ -3,7 +3,7 @@ local Players = game:GetService("Players")
 local ServerStorage = game:GetService("ServerStorage")
 local InsertService = game:GetService("InsertService")
 local AssetService = game:GetService("AssetService")
-local ServerStorage = game:GetService("ServerStorage")
+local CachedInsertService = require(ServerStorage.Server.CachedInsertService)
 
 local catalogModels = ServerStorage.Assets.CatalogModels
 
@@ -34,7 +34,7 @@ end
 local MarketplacePreviewUtil = {}
 MarketplacePreviewUtil.bundlePreviewCharacterPrefab = catalogModels.BundlePreviewCharacter
 
-function MarketplacePreviewUtil.GetHumanoidDescriptionFromBundleId(bundleId: number)
+function MarketplacePreviewUtil.GetHumanoidDescriptionFromBundleId(bundleId: number): HumanoidDescription?
     local bundleDetails: table
     local humanoidDescription: HumanoidDescription?
     local outfitId
@@ -58,7 +58,6 @@ function MarketplacePreviewUtil.GetHumanoidDescriptionFromBundleId(bundleId: num
     end
 
     if not outfitId then
-        warn(`No outfit id found for bundle {outfitId}`)
         return nil
     end
 
@@ -87,7 +86,25 @@ function MarketplacePreviewUtil.CreateBundlePreview(bundleDetails): Model
 
         for _, item in bundleDetails.Items or {} do
             if item.Type == "Asset" then
-                local animation = Instance.new("Animation")
+                local model: Model
+                local ok, result = pcall(function()
+                    return CachedInsertService.LoadAsset(item.Id)
+                end)
+
+                if not ok then
+                    warn(`Failed to insert for bundle preview ({item.Id}): {result}`)
+                    continue
+                else
+                    model = result
+                end
+
+                local animation = model:FindFirstChildWhichIsA("Animation", true)
+
+                if not animation then
+                    warn(`Asset {item.Id} was inserted, but an Animation instance could not be found`)
+                    continue
+                end
+
                 animation.Name = item.Name
                 animation.Parent = animationPackFolder
             end
@@ -95,14 +112,48 @@ function MarketplacePreviewUtil.CreateBundlePreview(bundleDetails): Model
 
         animationPackFolder.Parent = GetAnimator(character.Humanoid)
     else
-        character = catalogModels.BundlePreviewCharacter:Clone()
         local humanoidDescription = MarketplacePreviewUtil.GetHumanoidDescriptionFromBundleId(bundleDetails.Id)
 
         if humanoidDescription then
+            character = catalogModels.BundlePreviewCharacter:Clone()
             -- You can only apply HumanoidDescriptions to descendants of a DataModel
             character.Parent = ServerStorage
             character.Humanoid:ApplyDescription(humanoidDescription)
             character.Parent = nil
+        else
+            character = catalogModels.Mannequin:Clone()
+        end
+
+        for _, item in bundleDetails.Items or {} do
+            if item.Type == "Asset" then
+                local model: Model
+                local ok, result = pcall(function()
+                    return CachedInsertService.LoadAsset(item.Id)
+                end)
+
+                if not ok then
+                    warn(`Failed to insert for bundle preview ({item.Id}): {result}`)
+                    continue
+                else
+                    model = result
+                end
+
+                local accessory = model:FindFirstChildWhichIsA("Accessory")
+
+                if accessory then
+                    accessory.Parent = character
+                end
+            end
+        end
+
+        if bundleDetails.BundleType == "DynamicHead" then
+            print("Handling dynamic head")
+            -- DynamicHead bundles are only meant to contain character information about the Head,
+            -- so the body can end up looking strange. Replace a new character's head with the
+            -- dynamic head instead.
+            local newCharacter = catalogModels.Mannequin:Clone()
+            newCharacter.Humanoid:ReplaceBodyPartR15(Enum.BodyPartR15.Head, character.Head)
+            return newCharacter
         end
 
         return character
@@ -202,7 +253,7 @@ function MarketplacePreviewUtil.CreateBundlePreviewFromId(bundleId: number)
         end
     end
 
-    return if bundleDetails then MarketplacePreviewUtil.CreateAssetPreview(bundleDetails) else nil
+    return if bundleDetails then MarketplacePreviewUtil.CreateBundlePreview(bundleDetails) else nil
 end
 
 return MarketplacePreviewUtil

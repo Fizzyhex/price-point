@@ -12,7 +12,7 @@ local function Intermission(system)
         local scoreStateContainer = system:GetScoreStateContainer()
         replicatedRoundState:Patch({phase = "Intermission"})
 
-        local intermissionLength = system:GetIntermissionLength()
+        local intermissionLength = system:GetIntermissionTime()
         logger.print(`Intermission {intermissionLength}...`)
         task.wait(intermissionLength)
 

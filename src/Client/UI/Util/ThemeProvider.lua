@@ -12,10 +12,6 @@ local currentColors = {}
 local currentFontFaces = {}
 local currentFontSizes = {}
 
-local function WarnTraceback(message: string)
-    warn(`Theme Provider: {message}\n{debug.traceback()}`)
-end
-
 local ThemeProvider = {
     _currentColorScheme = Value("dark"),
     _currentTextScale = Value(1),

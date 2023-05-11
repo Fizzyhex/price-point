@@ -18,6 +18,7 @@ local ANCESTORS = { workspace }
 local function ItemTitleDisplay()
     return Observers.observeTag("ItemTitleDisplay", function(parent: Instance)
         local currentProductData = Value(nil)
+        local winnerName = Value(nil)
 
         local currentProductName = Computed(function()
             local data = currentProductData:get()
@@ -30,6 +31,8 @@ local function ItemTitleDisplay()
         end)
 
         local roundStateHook = RoundStateContainer.FusionUtil.StateHook(RoundStateContainer, currentProductData, "productData")
+        local winnerNameStateHook = RoundStateContainer.FusionUtil.StateHook(RoundStateContainer, winnerName, "winnerName")
+
         local frame = Background {
             Parent = parent,
 
@@ -44,6 +47,10 @@ local function ItemTitleDisplay()
                     AutomaticSize = Enum.AutomaticSize.None,
 
                     Text = Computed(function()
+                        if winnerName:get() then
+                            return `{winnerName:get()} won the game!`
+                        end
+
                         return currentProductName:get() or ""
                     end)
                 },
@@ -53,7 +60,7 @@ local function ItemTitleDisplay()
                     AnchorPoint = Vector2.new(0, 1),
                     Size = UDim2.fromScale(1, 0.4),
 
-                    TextTransparency = 0.7,
+                    TextTransparency = 0.5,
                     TextXAlignment = Enum.TextXAlignment.Center,
                     TextYAlignment = Enum.TextYAlignment.Center,
                     TextScaled = true,
@@ -61,6 +68,10 @@ local function ItemTitleDisplay()
                     AutomaticSize = Enum.AutomaticSize.None,
 
                     Text = Computed(function()
+                        if winnerName:get() then
+                            return "Congratulations!"
+                        end
+
                         local genre = currentProductType:get() or ""
                         return `Type: {genre}`
                     end)

@@ -1,4 +1,3 @@
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
@@ -21,15 +20,15 @@ end
 local function PriceGuessing(system)
     return Promise.new(function(resolve)
         local replicatedRoundState = system:GetRoundStateContainer()
-        local guessTime = system:GetGuessTime()
+        local guessTime = system:GetGuessingTime()
         local productData = system:PickNextProduct()
-
-        replicatedRoundState:Clear()
-
         local id = productData.Id or productData.AssetId
         local assetType: EnumItem? = AssetTypeIdToEnum(productData.AssetTypeId)
         local assetTypeName = if assetType then assetType.Name else nil
-        local price = productData.PriceInRobux or 0
+        local receivedGuesses = 0
+        local isResolved = false
+        local timerThread
+        replicatedRoundState:Clear()
 
         if productData.BundleType then
             assetTypeName = "Bundle"
@@ -65,13 +64,34 @@ local function PriceGuessing(system)
             end
         end
 
+        local function Advance()
+            if isResolved then
+                return
+            end
+
+            isResolved = true
+            system:CloseGuessing()
+            replicatedRoundState:Patch({guessingEnabled = false})
+            logger.print("Closed guessing")
+            resolve(system:GetStateByName("PriceReveal"))
+        end
+
+        local function OnGuess(player: Player, guess)
+            receivedGuesses += 1
+
+            if receivedGuesses >= #system:GetActivePlayers() then
+                if timerThread then
+                    task.cancel(timerThread)
+                    timerThread = nil
+                end
+
+                Advance()
+            end
+        end
+
         system:ClearGuesses()
-        system:OpenGuessing()
-        task.wait(guessTime)
-        system:CloseGuessing()
-        replicatedRoundState:Patch({guessingEnabled = false})
-        logger.print("Closed guessing")
-        resolve(system:GetStateByName("PriceReveal"))
+        system:OpenGuessing(OnGuess)
+        timerThread = task.delay(guessTime, Advance)
     end)
 end
 
