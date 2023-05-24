@@ -8,11 +8,25 @@ local logger = CreateLogger(script)
 
 local function Intermission(system)
     return Promise.new(function(resolve)
-        local replicatedRoundState = system:GetRoundStateContainer()
+        local roundStateContainer = system:GetRoundStateContainer()
         local scoreStateContainer = system:GetScoreStateContainer()
-        replicatedRoundState:Patch({phase = "Intermission"})
-
         local intermissionLength = system:GetIntermissionTime()
+        roundStateContainer:Clear()
+
+        while true do
+            if #system:GetActivePlayers() == 0 then
+                Players.PlayerAdded:Wait()
+            else
+                break
+            end
+        end
+
+        roundStateContainer:Patch({
+            phase = "Intermission",
+            roundTimer = workspace:GetServerTimeNow(),
+            roundDuration = intermissionLength,
+        })
+
         logger.print(`Intermission {intermissionLength}...`)
         task.wait(intermissionLength)
 
@@ -32,7 +46,6 @@ local function Intermission(system)
         end
 
         scoreStateContainer:Patch(scorePatch)
-
         resolve(system:GetStateByName("NextRound"))
     end)
 end

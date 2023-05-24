@@ -111,8 +111,23 @@ function GameStateMachine:GetGuesses()
 end
 
 function GameStateMachine:PickNextProduct()
+    if self._currentProduct then
+        local currentProducts = self._productFeedStateContainer:GetAll()
+
+        if #currentProducts > 10 then
+            table.remove(currentProducts, 1)
+        end
+
+        table.insert(currentProducts, 1, {
+            id = self._currentProduct.Id or self._currentProduct.AssetId,
+            type = if self._currentProduct.BundleType then Enum.AvatarItemType.Bundle else Enum.AvatarItemType.Asset
+        })
+        self._productFeedStateContainer:Patch(currentProducts)
+    end
+
     local product = self:_GetRandomProduct()
     self._currentProduct = product
+
     return product
 end
 
@@ -122,6 +137,9 @@ end
 
 function GameStateMachine:DecreaseRoundsRemaining()
     self._roundsRemaining -= 1
+    self._roundStateContainer:Patch({
+        roundsRemaining = self._roundsRemaining
+    })
 end
 
 function GameStateMachine:GetActivePlayers()
@@ -141,12 +159,11 @@ function GameStateMachine:_GetRandomProduct()
     if not ok then
         logger.warn(`Failed to fetch marketplace info for {productData.id}: {marketplaceInfo}`)
         task.wait(0.5)
-        return self:_GetRandomProduct(self._productPools)
+        return self:_GetRandomProduct()
     end
 
-    -- Use the cached price if it's not provided witin the MarketplaceInfo (e.g for bundles)
+    -- Use the cached price if it's not provided within the MarketplaceInfo (e.g for bundles) (why)
     marketplaceInfo.PriceInRobux = marketplaceInfo.PriceInRobux or productData.price
-
     return marketplaceInfo
 end
 
@@ -181,11 +198,12 @@ function GameStateMachine:Start(endCallback)
     end
 end
 
-function GameStateMachine.new(roundStateContainer, scoreStateContainer, guessStateContainer, productPools)
+function GameStateMachine.new(stateContainers, productPools)
     local self = setmetatable({}, GameStateMachine)
-    self._roundStateContainer = roundStateContainer
-    self._scoreStateContainer = scoreStateContainer
-    self._guessStateContainer = guessStateContainer
+    self._roundStateContainer = stateContainers.roundStateContainer
+    self._scoreStateContainer = stateContainers.scoreStateContainer
+    self._guessStateContainer = stateContainers.guessStateContainer
+    self._productFeedStateContainer = stateContainers.productFeedStateContainer
     self._productPools = productPools
     self._roundsRemaining = assert(gameRules:GetAttribute("rounds"), "'rounds' game rule is not set")
     self._guesses = {}

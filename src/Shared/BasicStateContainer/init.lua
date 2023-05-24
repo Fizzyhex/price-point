@@ -20,6 +20,16 @@ function BasicStateContainer.new(defaultState)
     return self
 end
 
+function BasicStateContainer:_FireObservers(oldState, newState)
+    for key, callback in self._observers do
+        task.spawn(function()
+            if self._observers[key] then
+                callback(oldState, newState)
+            end
+        end)
+    end
+end
+
 function BasicStateContainer:Observe(callback: (oldState: any, newState: any) -> ())
     local observerKey = {}
     self._observers[observerKey] = callback
@@ -45,7 +55,7 @@ function BasicStateContainer:Patch(patch)
 
     self._currentState = newState
     self.onStateChanged:Fire(oldState, newState)
-    self:_fireObservers(oldState, newState)
+    self:_FireObservers(oldState, newState)
 
     return newState
 end
@@ -55,17 +65,7 @@ function BasicStateContainer:Clear()
     local newState = {}
     self._currentState = newState
     self.onStateChanged:Fire(oldState, newState)
-    self:_fireObservers(oldState, newState)
-end
-
-function BasicStateContainer:_fireObservers(oldState, newState)
-    for key, callback in self._observers do
-        task.spawn(function()
-            if self._observers[key] then
-                callback(oldState, newState)
-            end
-        end)
-    end
+    self:_FireObservers(oldState, newState)
 end
 
 function BasicStateContainer:GetAll()

@@ -19,7 +19,7 @@ end
 
 local function PriceGuessing(system)
     return Promise.new(function(resolve)
-        local replicatedRoundState = system:GetRoundStateContainer()
+        local roundStateContainer = system:GetRoundStateContainer()
         local guessTime = system:GetGuessingTime()
         local productData = system:PickNextProduct()
         local id = productData.Id or productData.AssetId
@@ -28,7 +28,6 @@ local function PriceGuessing(system)
         local receivedGuesses = 0
         local isResolved = false
         local timerThread
-        replicatedRoundState:Clear()
 
         if productData.BundleType then
             assetTypeName = "Bundle"
@@ -42,27 +41,39 @@ local function PriceGuessing(system)
             component:SetModel(nil)
         end
 
-        replicatedRoundState:Patch({
+        local productDataPayload = {
+            image = imageUri,
+            name = productData.Name,
+            type = assetTypeName,
+        }
+
+        if productData.Created then
+            productDataPayload.year = tonumber(string.match(productData.Created, "%d+"))
+        end
+
+        roundStateContainer:Patch({
             phase = "PriceGuessing",
             guessingEnabled = true,
-            productData = {
-                image = imageUri,
-                name = productData.Name,
-                type = assetTypeName
-            },
+            roundTimer = workspace:GetServerTimeNow(),
+            roundDuration = guessTime,
+            productData = productDataPayload
         })
 
-        local preview =
-            if productData.BundleType
-            then MarketplacePreviewUtil.CreateBundlePreviewFromId(id)
-            elseif productData.AssetId then MarketplacePreviewUtil.CreateAssetPreviewFromId(id)
-            else nil
+        logger.print("Players are guessing product:", productData)
 
-        if preview then
-            for _, component in ServerItemProjector:GetAll() do
-                component:SetModel(preview:Clone())
+        task.spawn(function()
+            local preview =
+                if productData.BundleType
+                then MarketplacePreviewUtil.CreateBundlePreviewFromId(id)
+                elseif productData.AssetId then MarketplacePreviewUtil.CreateAssetPreviewFromId(id)
+                else nil
+
+            if preview then
+                for _, component in ServerItemProjector:GetAll() do
+                    component:SetModel(preview:Clone())
+                end
             end
-        end
+        end)
 
         local function Advance()
             if isResolved then
@@ -71,7 +82,7 @@ local function PriceGuessing(system)
 
             isResolved = true
             system:CloseGuessing()
-            replicatedRoundState:Patch({guessingEnabled = false})
+            roundStateContainer:Patch({guessingEnabled = false})
             logger.print("Closed guessing")
             resolve(system:GetStateByName("PriceReveal"))
         end

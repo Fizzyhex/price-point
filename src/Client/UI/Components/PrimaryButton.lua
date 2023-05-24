@@ -4,14 +4,15 @@ local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 local Button = require(ReplicatedStorage.Client.UI.Components.Button)
 local ThemeProvider = require(ReplicatedStorage.Client.UI.Util.ThemeProvider)
 
-local function PrimaryButton(props)
-    local buttonProps = TableUtil.Reconcile({
-        BackgroundColor3 = ThemeProvider:GetColor("accent"),
-        TextColor3 = Color3.new(0, 0, 0),
-        Name = "PrimaryButton",
-    }, props)
+local Fusion = require(ReplicatedStorage.Packages.Fusion)
+local Hydrate = Fusion.Hydrate
 
-    return Button(buttonProps)
+local function PrimaryButton(props)
+    local newProps = table.clone(props)
+    newProps.BackgroundColor3 = newProps.BackgroundColor3 or ThemeProvider:GetColor("accent")
+    newProps.TextColor3 = props.TextColor3 or Color3.new(0, 0, 0)
+    newProps.Name = newProps.Name or "PrimaryButton"
+    return Button(newProps)
 end
 
 return PrimaryButton

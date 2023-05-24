@@ -11,33 +11,44 @@ local CreateLogger = require(ReplicatedStorage.Shared.CreateLogger)
 local MODULE_FILTER = Baseline.Filters.IsA("ModuleScript")
 local logger = CreateLogger(script)
 
-local function LoudRequire(message: string)
+local function LoudlyRequire(message: string)
     return function(module: ModuleScript)
         logger.print(string.format(message, module:GetFullName()))
         return require(module)
     end
 end
 
-local observerLoadRequire = LoudRequire("Loading observer %s")
+local observerLoadRequire = LoudlyRequire("Loading observer %s")
 
-local function LoudLoadObserver(observer)
+local function LoudlyLoadObserver(observer)
     return observerLoadRequire(observer)()
 end
 
 local function LoadSystems(container)
-    local systems = {}
+    local functionalSystems = {}
+    local lifecycleSystems = {}
 
     for _, systemContainer in container do
-        local moduleScripts = Baseline.Filter(
+        local moduleScripts: {ModuleScript} = Baseline.Filter(
             systemContainer:GetDescendants(),
             MODULE_FILTER
         )
-        local modules = Baseline.CallFor(moduleScripts, LoudRequire("Loading system %s..."))
-        systems = Baseline.Extend(systems, modules)
+
+        for _, moduleScript in moduleScripts do
+            logger.print(`Requiring {moduleScript:GetFullName()}...`)
+            local module = require(moduleScript)
+
+            if typeof(module) == "table" then
+                lifecycleSystems[moduleScript] = module
+            else
+                functionalSystems[moduleScript] = module
+            end
+        end
     end
 
-    Baseline.CallMethods(systems, "OnInit")
-    Baseline.SpawnMethods(systems, "OnStart")
+    Baseline.CallFor(functionalSystems, task.spawn)
+    Baseline.CallMethods(lifecycleSystems, "OnInit")
+    Baseline.SpawnMethods(lifecycleSystems, "OnStart")
 end
 
 local function LoadComponents(container)
@@ -46,7 +57,7 @@ local function LoadComponents(container)
             componentContainer:GetDescendants(),
             MODULE_FILTER
         )
-        Baseline.CallFor(moduleScripts, LoudRequire("Loading component %s..."))
+        Baseline.CallFor(moduleScripts, LoudlyRequire("Loading component %s..."))
     end
 end
 
@@ -56,7 +67,7 @@ local function LoadObservers(container)
             observerContainer:GetDescendants(),
             MODULE_FILTER
         )
-        Baseline.CallFor(moduleScripts, LoudLoadObserver)
+        Baseline.CallFor(moduleScripts, LoudlyLoadObserver)
     end
 end
 

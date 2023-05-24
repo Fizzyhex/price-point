@@ -8,6 +8,7 @@ local Children = Fusion.Children
 local Value = Fusion.Value
 local Computed = Fusion.Computed
 local Spring = Fusion.Spring
+local Tween = Fusion.Tween
 
 local ThemeProvider = require(ReplicatedStorage.Client.UI.Util.ThemeProvider)
 local RoundStateContainer = require(ReplicatedStorage.Client.StateContainers.RoundStateContainer)
@@ -17,6 +18,8 @@ local Header = require(ReplicatedStorage.Client.UI.Components.Header)
 local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.ShorthandPadding)
 local Background = require(ReplicatedStorage.Client.UI.Components.Background)
 local Nest = require(ReplicatedStorage.Client.UI.Components.Nest)
+local GlobalEventSystem = require(ReplicatedStorage.Client.GlobalEventSystem)
+local Unwrap = require(ReplicatedStorage.Client.UI.Util.Unwrap)
 
 local ANCESTORS = { workspace }
 
@@ -32,6 +35,7 @@ local function PriceRevealDisplay()
         local isPriceRevealPhase = Value(false)
         local revealPrice = Value(nil)
         local animationPromise = nil :: typeof(Promise.new())
+        local flashTransparency = Spring(Value(1), 15)
 
         local uiPosition = Spring(Computed(function()
             return if isPriceRevealPhase:get() then UDim2.new() else UDim2.fromScale(0, -1)
@@ -46,6 +50,7 @@ local function PriceRevealDisplay()
             local revealPriceSpring = Spring(Computed(function()
                 return if displayRevealPrice:get() then revealPrice:get() else 0
             end), 5)
+            local lastPriceAnimationDisplay
 
             if animationPromise then
                 animationPromise:cancel()
@@ -60,21 +65,45 @@ local function PriceRevealDisplay()
                 end), 20),
 
                 [Children] = {
-                    Header {
+                    New "Frame" {
+                        Name = "Flash",
                         Size = UDim2.fromScale(1, 1),
-                        AutomaticSize = Enum.AutomaticSize.None,
-                        Text = Computed(function()
-                            if displayRevealPrice:get() then
-                                return `R${Round(revealPriceSpring:get())}`
-                            else
-                                return text:get()
-                            end
-                        end),
-                        TextColor3 = textColorSpring,
-                        TextScaled = true,
+                        ZIndex = 50,
+                        BackgroundColor3 = Color3.new(1, 1, 1),
+                        BackgroundTransparency = flashTransparency
                     },
 
-                    ShorthandPadding { Padding = UDim.new(0, 12) }
+                    Nest {
+                        [Children] = {
+                            Header {
+                                Size = UDim2.fromScale(1, 1),
+                                AutomaticSize = Enum.AutomaticSize.None,
+                                Text = Computed(function()
+                                    if displayRevealPrice:get() then
+                                        local value = Round(revealPriceSpring:get())
+
+                                        if lastPriceAnimationDisplay ~= value then
+                                            if value == revealPrice:get() then
+                                                task.delay(0.8, function()
+                                                    flashTransparency:addVelocity(-20)
+                                                    GlobalEventSystem.onPriceRevealed:Fire()
+                                                end)
+                                            end
+                                        end
+
+                                        lastPriceAnimationDisplay = value
+                                        return `R${Round(revealPriceSpring:get())}`
+                                    else
+                                        return text:get()
+                                    end
+                                end),
+                                TextColor3 = textColorSpring,
+                                TextScaled = true,
+                            },
+
+                            ShorthandPadding { Padding = UDim.new(0, 12) }
+                        }
+                    }
                 }
             }
 
@@ -89,6 +118,11 @@ local function PriceRevealDisplay()
                 :finallyCall(sleep, 3)
                 :finallyCall(Reveal, 3)
                 :catch(warn)
+
+            if ui:get() then
+                -- Cleanup old UI
+                ui:get():Destroy()
+            end
 
             ui:set(newUi)
         end

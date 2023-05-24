@@ -7,13 +7,14 @@ local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Value = Fusion.Value
-local Hydrate = Fusion.Hydrate
 
 local ScoreStateContainer = require(ReplicatedStorage.Client.StateContainers.ScoreStateContainer)
 local GuessStateContainer = require(ReplicatedStorage.Client.StateContainers.GuessStateContainer)
 local Blinder3D = require(ReplicatedStorage.Client.UI.Components.Blinder3D)
 local ScoreboardEntry = require(ReplicatedStorage.Client.UI.Components.ScoreboardEntry)
 local NetworkNamespaces = require(ReplicatedStorage.Shared.Constants.NetworkNamespaces)
+local RoundStateContainer = require(ReplicatedStorage.Client.StateContainers.RoundStateContainer)
+local ScoreboardChannel = require(ReplicatedStorage.Client.EventChannels.ScoreboardChannel)
 
 local ANCESTORS = { workspace }
 
@@ -61,6 +62,8 @@ local function Scoreboard()
         local blinderDisplays: {typeof(Value())} = {}
         local blinders = {}
         local playerDataTable = {}
+        local price = Value()
+        binAdd(RoundStateContainer.FusionUtil.StateHook(RoundStateContainer, price, "price"))
 
         for i = 1, 10 do
             local entry = entryPrefab:Clone()
@@ -84,6 +87,7 @@ local function Scoreboard()
             local index = 0
             local scores = ScoreStateContainer:GetAll()
             local lenBlinderDisplays = #TableUtil.Values(blinderDisplays)
+            local isReordered = true
             print("Client scoreboard sees these scores:", scores)
 
             OrderedScoreIterator(scores, function(userId, score)
@@ -106,7 +110,10 @@ local function Scoreboard()
                     return
                 end
 
-                blinderDisplay:set(data.ui)
+                if blinderDisplay:get() ~= data.ui then
+                    isReordered = true
+                    blinderDisplay:set(data.ui)
+                end
             end)
 
             if #scores > lenBlinderDisplays then
@@ -114,6 +121,10 @@ local function Scoreboard()
                 for i = #scores + 1, lenBlinderDisplays do
                     blinderDisplays[i]:set(nil)
                 end
+            end
+
+            if isReordered then
+                ScoreboardChannel.RaiseScoreboardResort(container)
             end
         end
 
@@ -136,6 +147,7 @@ local function Scoreboard()
                 Score = score,
                 Avatar = `rbxthumb://type=AvatarHeadShot&id={player.UserId}&w=352&h=352`,
                 Guess = guess,
+                CorrectGuess = price,
                 IsReady = isReady
             }
             playerBinAdd(ui)
@@ -161,8 +173,6 @@ local function Scoreboard()
         binAdd(OnServerScoreboardResort(ReorderScoreboard))
 
         binAdd(GuessStateContainer:Observe(function(oldState, newState)
-            print("GuessStateContainer updated", oldState, newState)
-
             for userId, guess in newState do
                 if oldState[userId] == guess then
                     continue

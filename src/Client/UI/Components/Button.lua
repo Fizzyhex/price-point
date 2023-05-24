@@ -10,7 +10,7 @@ local ThemeProvider = require(ReplicatedStorage.Client.UI.Util.ThemeProvider)
 local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.ShorthandPadding)
 local StripProps = require(ReplicatedStorage.Client.UI.Util.StripProps)
 
-local STRIPPED_PROPS = {"OnClick"}
+local STRIPPED_PROPS = { "OnClick" }
 
 local function Button(props)
     local textButton = New "TextButton" {
@@ -20,9 +20,7 @@ local function Button(props)
         TextSize = props.TextSize or ThemeProvider:GetFontSize("body", props.TextScaling),
         TextXAlignment = props.TextXAlignment or Enum.TextXAlignment.Center,
         TextWrapped = true,
-
         BackgroundColor3 = props.BackgroundColor3 or ThemeProvider:GetColor("background_3"),
-
         AutomaticSize = props.AutomaticSize or Enum.AutomaticSize.XY,
 
         [OnEvent "MouseButton1Click"] = function()

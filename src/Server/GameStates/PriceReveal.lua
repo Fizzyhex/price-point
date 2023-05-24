@@ -12,7 +12,8 @@ local function PriceReveal(system)
 
         replicatedRoundState:Patch({
             phase = "PriceReveal",
-            price = productData.PriceInRobux
+            price = productData.PriceInRobux,
+            roundTimer = 0
         })
 
         local finalGuesses = system:GetGuesses()
@@ -22,7 +23,7 @@ local function PriceReveal(system)
         task.wait(7)
         logger.print("Reveal over")
 
-        resolve(system:GetStateByName("AwardPoints"))
+        resolve(system:GetStateByName("RewardPoints"))
     end)
 end
 

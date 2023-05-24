@@ -25,4 +25,8 @@ function RandomPool:Pop()
     return table.remove(self._pool, #self._pool)
 end
 
+function RandomPool:IsEmpty()
+    return #self._pool == 0
+end
+
 return RandomPool

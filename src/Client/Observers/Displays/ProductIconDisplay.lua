@@ -27,6 +27,7 @@ local function ProductIconDisplay()
         local roundStateHook = RoundStateContainer.FusionUtil.StateHook(RoundStateContainer, currentProductData, "productData")
         local frame = Background {
             Parent = parent,
+            Archivable = false,
 
             [Children] = {
                 ProductImageCard {

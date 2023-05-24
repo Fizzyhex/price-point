@@ -1,8 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local ShutUpRed = {}
-
-function ShutUpRed:OnInit()
+local function ShutUpRed()
     ReplicatedStorage:SetAttribute("RedDebug", false)
 end
 

@@ -26,9 +26,7 @@ local gameRules = ReplicatedStorage.Assets.Configuration.GameRules
 
 local LOCAL_PLAYER = Players.LocalPlayer
 
-local GuessingUIController = {}
-
-function GuessingUIController:OnStart()
+local function GuessingUIController()
     local guessNetwork = Red.Client(NetworkNamespaces.GUESS_SUBMISSION)
     local playerGui = LOCAL_PLAYER:WaitForChild("PlayerGui")
     local isGuessingAvailable = Value(false)

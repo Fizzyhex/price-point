@@ -12,26 +12,60 @@ local Header = require(ReplicatedStorage.Client.UI.Components.Header)
 local Background = require(ReplicatedStorage.Client.UI.Components.Background)
 local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.ShorthandPadding)
 local RoundStateContainer = require(ReplicatedStorage.Client.StateContainers.RoundStateContainer)
+local Red = require(ReplicatedStorage.Packages.Red)
 
 local ANCESTORS = { workspace }
 
+local function TrimStart(str: string)
+    return str:match'^%s*(.*)'
+end
+
+local function PascalToWhitespace(str: string)
+    local spacedString = str:gsub("%u", function(letter)
+        return " " .. letter
+    end)
+
+    return TrimStart(spacedString)
+end
+
 local function ItemTitleDisplay()
     return Observers.observeTag("ItemTitleDisplay", function(parent: Instance)
+        local binAdd, binEmpty = Red.Bin()
         local currentProductData = Value(nil)
         local winnerName = Value(nil)
+        local currentPhase = Value(nil)
 
         local currentProductName = Computed(function()
             local data = currentProductData:get()
             return if data then data.name else nil
         end)
 
-        local currentProductType = Computed(function()
+        local currentProductInfo = Computed(function()
             local data = currentProductData:get()
-            return if data then data.type else nil
+
+            if not data then
+                return nil
+            end
+
+            local currentYear = os.date("%Y")
+            local cleanType = if data.type then PascalToWhitespace(data.type) else nil
+
+            if data.year and data.type then
+                if data.year <= currentYear - 13 then
+                    return `An old {cleanType} from {data.year}`
+                elseif data.year <= currentYear - 8 then
+                    return `A classic {cleanType} from {data.year}`
+                else
+                    return `{cleanType}, from {data.year}`
+                end
+            end
+
+            return if data.type then cleanType else nil
         end)
 
-        local roundStateHook = RoundStateContainer.FusionUtil.StateHook(RoundStateContainer, currentProductData, "productData")
-        local winnerNameStateHook = RoundStateContainer.FusionUtil.StateHook(RoundStateContainer, winnerName, "winnerName")
+        binAdd(RoundStateContainer.FusionUtil.StateHook(RoundStateContainer, currentProductData, "productData"))
+        binAdd(RoundStateContainer.FusionUtil.StateHook(RoundStateContainer, winnerName, "winnerName"))
+        binAdd(RoundStateContainer.FusionUtil.StateHook(RoundStateContainer, currentPhase, "phase"))
 
         local frame = Background {
             Parent = parent,
@@ -47,11 +81,16 @@ local function ItemTitleDisplay()
                     AutomaticSize = Enum.AutomaticSize.None,
 
                     Text = Computed(function()
-                        if winnerName:get() then
-                            return `{winnerName:get()} won the game!`
-                        end
+                        local phase = currentPhase:get()
 
-                        return currentProductName:get() or ""
+                        if phase == "Intermission" then
+                            return "Intermission"
+                        elseif phase == "GameOver" then
+                            local winner = winnerName:get()
+                            return if winner then `{winner} won the game!` else ""
+                        else
+                            return currentProductName:get() or ""
+                        end
                     end)
                 },
 
@@ -68,12 +107,15 @@ local function ItemTitleDisplay()
                     AutomaticSize = Enum.AutomaticSize.None,
 
                     Text = Computed(function()
-                        if winnerName:get() then
-                            return "Congratulations!"
-                        end
+                        local phase = currentPhase:get()
 
-                        local genre = currentProductType:get() or ""
-                        return `Type: {genre}`
+                        if phase == "Intermission" then
+                            return "A new game will start shortly."
+                        elseif phase == "GameOver" then
+                            return "Thanks for playing!"
+                        else
+                            return currentProductInfo:get() or ""
+                        end
                     end)
                 },
 
@@ -81,10 +123,9 @@ local function ItemTitleDisplay()
             }
         }
 
-        return function()
-            roundStateHook:Disconnect()
-            frame:Destroy()
-        end
+        binAdd(frame)
+
+        return binEmpty
     end, ANCESTORS)
 end
 

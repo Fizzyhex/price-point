@@ -7,6 +7,7 @@ from enum import Enum
 # https://devforum.roblox.com/t/collected-list-of-apis/557091
 # https://catalog.roblox.com/docs/index.html
 SEARCH_ENDPOINT = "https://catalog.roblox.com/v2/search/items/details"
+RESULTS_PER_PAGE = 120
 
 class MarketplaceSubcategories(Enum): # not exhaustive, but good enough for our use case
     featured = 0
@@ -34,15 +35,18 @@ def Scrape(targetSubcategories: dict, pages:int=1):
     maxCallsPerMinute = 20
     maxCallsPerSecond = 60 / maxCallsPerMinute
     estimatedCompletionTime = len(targetSubcategories) * maxCallsPerSecond * pages
-
     print("Estimated completion time: {:0.2f}s".format(estimatedCompletionTime))
 
-    for categoryName, categoryId in targetSubcategories.items():
+    for categoryName, categoryEnum in targetSubcategories.items():
         nextPageCursor = None
         scrape[categoryName] = []
 
         for pageIndex in range(1, pages):
-            url = f"{SEARCH_ENDPOINT}/?Subcategory={categoryId}&Limit=120&SortAggregation=5&CreatorTargetId=1"
+            url = f"{SEARCH_ENDPOINT}/?Subcategory={categoryEnum.value}&Limit={RESULTS_PER_PAGE}&SortAggregation=5&CreatorTargetId=1"
+
+            if nextPageCursor == False:
+                print("No next page cursor - changing category")
+                break
 
             if nextPageCursor:
                 # Note: Hard limit for cursors is 36 pages
@@ -55,11 +59,12 @@ def Scrape(targetSubcategories: dict, pages:int=1):
                 if response.status_code == 429:
                     print("Rate limited - waiting before trying again (15s)")
                     time.sleep(15)
+                    continue
                 else:
                     response.raise_for_status()
 
             json = response.json()
-            nextPageCursor = json.get("nextPageCursor")
+            nextPageCursor = json.get("nextPageCursor", False)
 
             entries = []
 
@@ -92,7 +97,7 @@ scrapeResult = Scrape({
     "heads": MarketplaceSubcategories.heads,
     "bundles": MarketplaceSubcategories.bundles,
     "clothing": MarketplaceSubcategories.clothing,
-}, pages=4)
+}, pages=6)
 
 print("Exporting scrape...")
 ExportScrape(scrapeResult, "AvatarShopData.json")

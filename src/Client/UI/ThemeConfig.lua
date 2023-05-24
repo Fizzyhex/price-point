@@ -4,6 +4,11 @@ local THEME_COLORS = {
         dark = Color3.fromRGB(43, 217, 72)
     },
 
+    primary = {
+        light = Color3.fromRGB(0, 0, 0),
+        dark = Color3.fromRGB(255, 255, 255)
+    },
+
     background = {
         light = Color3.fromRGB(255, 255, 255),
         dark = Color3.fromRGB(20, 20, 20)
@@ -27,6 +32,11 @@ local THEME_COLORS = {
     body = {
         light = Color3.fromRGB(20, 20, 20),
         dark = Color3.fromRGB(230, 230, 230)
+    },
+
+    subtext = {
+        light = Color3.fromRGB(50, 50, 50),
+        dark = Color3.fromRGB(200, 200, 200)
     },
 
     error = {

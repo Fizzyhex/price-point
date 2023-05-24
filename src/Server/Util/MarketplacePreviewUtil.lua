@@ -1,4 +1,5 @@
 local CollectionService = game:GetService("CollectionService")
+local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ServerStorage = game:GetService("ServerStorage")
 local InsertService = game:GetService("InsertService")
@@ -202,15 +203,6 @@ function MarketplacePreviewUtil.CreateAssetPreview(asset: Instance)
         return model
     end
 
-    if asset:IsA("SpecialMesh") and asset:FindFirstChild("AvatarPartScaleType") then
-        local headPreviewRig = catalogModels.HeadPreviewRig:Clone();
-        local humanoidDescription = ((headPreviewRig.Humanoid) :: Humanoid):GetAppliedDescription()
-        humanoidDescription.Head = asset.MeshId
-        -- HumanoidDescriptions can only be applied to descendants of a DataModel, so it will be up
-        -- to the caller to call Humanoid:ApplyDescription()
-        return headPreviewRig
-    end
-
     local mannequin = catalogModels.Mannequin:Clone()
 
     if asset:IsA("SpecialMesh") and asset:FindFirstChild("AvatarPartScaleType") then
@@ -222,8 +214,37 @@ function MarketplacePreviewUtil.CreateAssetPreview(asset: Instance)
     return mannequin
 end
 
+function MarketplacePreviewUtil.CreateHeadPreviewCharacter(assetId: number)
+    local headPreviewRig = catalogModels.HeadPreviewRig:Clone();
+    local humanoidDescription = ((headPreviewRig.Humanoid) :: Humanoid):GetAppliedDescription()
+    humanoidDescription.Head = assetId
+
+    -- HumanoidDescriptions can only be applied to descendants of the DataModel.
+    headPreviewRig.Parent = ServerStorage
+    headPreviewRig.Humanoid:ApplyDescription(humanoidDescription)
+    headPreviewRig.Parent = nil
+
+    return headPreviewRig
+end
+
 function MarketplacePreviewUtil.CreateAssetPreviewFromId(assetId: number)
+    local assetInfo: table?
     local asset: Instance?
+
+    do
+        local ok, result = pcall(MarketplaceService.GetProductInfo, MarketplaceService, assetId)
+
+        if ok then
+            assetInfo = result
+        else
+            warn(`Failed to fetch marketplace info ({assetId}): {result}`)
+            return nil
+        end
+    end
+
+    if assetInfo.AssetTypeId == Enum.AssetType.Head.Value then
+        return MarketplacePreviewUtil.CreateHeadPreviewCharacter(assetId)
+    end
 
     do
         local ok, result = pcall(InsertService.LoadAsset, InsertService, assetId)

@@ -23,6 +23,7 @@ local function StateReceiver(namespace: string)
             payload[key] = if value == nil then BasicStateContainer.NONE else value
         end
 
+        logger.print("Patched inital payload from server", namespace, payload)
         stateContainer:Patch(payload)
     end)
 

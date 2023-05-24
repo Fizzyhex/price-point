@@ -19,12 +19,14 @@ local StripProps = require(ReplicatedStorage.Client.UI.Util.StripProps)
 local Unwrap = require(ReplicatedStorage.Client.UI.Util.Unwrap)
 local ThemeProvider = require(ReplicatedStorage.Client.UI.Util.ThemeProvider)
 
+local CORRECT_GUESS_COLOR = Color3.fromRGB(222, 133, 39)
 local STRIPPED_PROPS = {
     "PlayerName",
     "Avatar",
     "Score",
     "Guess",
-    "IsReady"
+    "IsReady",
+    "CorrectGuess"
 }
 
 local function Round(x)
@@ -37,6 +39,7 @@ local function ScoreboardEntry(props)
     local score = props.Score
     local playerName = props.PlayerName
     local avatar = props.Avatar
+    local correctGuess = props.CorrectGuess
 
     local defaultBackgroundColor = ThemeProvider:GetColor("background")
     local increasingBackgroundColor = ThemeProvider:GetColor("accent")
@@ -136,6 +139,12 @@ local function ScoreboardEntry(props)
                     Label {
                         Name = "Guess",
                         LayoutOrder = 1,
+                        TextColor3 = Spring(Computed(function()
+                            local currentCorrectGuess = Unwrap(correctGuess)
+                            return
+                                if currentCorrectGuess and currentCorrectGuess == Unwrap(guess) then CORRECT_GUESS_COLOR
+                                else Unwrap(ThemeProvider:GetColor("body"))
+                        end), 20),
                         Text = Computed(function()
                             local currentGuess = Unwrap(guess)
                             return if currentGuess then currentGuess else ""
@@ -143,7 +152,6 @@ local function ScoreboardEntry(props)
                         FontFace = ThemeProvider:GetFontFace("bold"),
                         TextScaled = true,
                         AutomaticSize = Enum.AutomaticSize.None,
-
                         Size = Spring(Computed(function()
                             return if isTickVisible:get() then UDim2.fromScale(0, 0) else UDim2.fromScale(1, 1)
                         end), 20)

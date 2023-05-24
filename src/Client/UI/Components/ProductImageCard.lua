@@ -16,6 +16,7 @@ local STRIPPED_PROPS = { "Image", "ImageTransparency" }
 
 local function ProductImageCard(props)
     local card = New "Frame" {
+        Name = "ProductImageCard",
         Size = UDim2.fromOffset(200, 200),
         BackgroundColor3 = ThemeProvider:GetColor("background", "light"),
 

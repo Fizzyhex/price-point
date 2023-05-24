@@ -10,9 +10,9 @@ function FusionUtil.StateHook<stateObject>(stateContainer, state: stateObject, k
         end
     end
 
-    return stateContainer.onStateChanged:Connect(function(_, new)
-        if new[key] then
-            state:set(if new[key] == stateContainer.NONE then nil else new[key])
+    return stateContainer.onStateChanged:Connect(function(old, new)
+        if old[key] ~= new[key] then
+            state:set(new[key])
         end
     end), state
 end

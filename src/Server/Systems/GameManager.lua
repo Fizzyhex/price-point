@@ -11,6 +11,13 @@ local GameStateMachine = require(ServerStorage.Server.GameStateMachine)
 
 local logger = CreateLogger(script)
 
+local STATE_CONTAINER_NAMESPACES = {
+    roundStateContainer = NetworkNamespaces.ROUND_STATE_CONTAINER,
+    productFeedStateContainer = NetworkNamespaces.PRODUCT_FEED_STATE_CONTAINER,
+    scoreStateContainer = NetworkNamespaces.SCORE_STATE_CONTAINER,
+    guessStateContainer = NetworkNamespaces.GUESS_STATE_CONTAINER
+}
+
 local USE_TEST_PRODUCTS = false
 local TEST_PRODUCTS = {
     -- {
@@ -27,12 +34,19 @@ local TEST_PRODUCTS = {
     --     price = 200
     -- },
 
+    -- {
+    --     -- Canvas Shoes - Pink (bundle of shoes)
+    --     id = 877,
+    --     itemType = "Bundle",
+    --     price = 50
+    -- },
+
+    -- Trim (head)
     {
-        -- Canvas Shoes - Pink (bundle of shoes)
-        id = 877,
-        itemType = "Bundle",
-        price = 50
-    },
+        id = 6340227,
+        itemType = "Asset",
+        price = 0
+    }
 }
 
 local function MakeProductPools()
@@ -54,13 +68,13 @@ local GameManager = {}
 function GameManager:OnStart()
     logger.print("Starting game state machine...")
     local productPools = MakeProductPools()
+    local stateContainers = {}
 
-    local roundStateContainer = BasicStateContainer.new()
-    StateReplicator(NetworkNamespaces.ROUND_STATE_CONTAINER, roundStateContainer)
-    local scoreStateContainer = BasicStateContainer.new()
-    StateReplicator(NetworkNamespaces.SCORE_STATE_CONTAINER, scoreStateContainer)
-    local guessStateContainer = BasicStateContainer.new()
-    StateReplicator(NetworkNamespaces.GUESS_STATE_CONTAINER, guessStateContainer)
+    for key, networkNamespace in STATE_CONTAINER_NAMESPACES do
+        local stateContainer = BasicStateContainer.new()
+        stateContainers[key] = stateContainer
+        StateReplicator(networkNamespace, stateContainer)
+    end
 
     if USE_TEST_PRODUCTS then
         logger.warn("Test products are being used.")
@@ -71,9 +85,7 @@ function GameManager:OnStart()
     local function RunGame()
         logger.print("Running game")
         return GameStateMachine.new(
-            roundStateContainer,
-            scoreStateContainer,
-            guessStateContainer,
+            stateContainers,
             productPools
         ):Start(function()
             logger.print("Starting a new game")

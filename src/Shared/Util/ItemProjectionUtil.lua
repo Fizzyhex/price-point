@@ -1,7 +1,3 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-local TicketBooth = require(ReplicatedStorage.Shared.TicketBooth)
-
 local ContainerPrototype = Instance.new("Folder")
 ContainerPrototype.Name = "ItemContainer"
 
