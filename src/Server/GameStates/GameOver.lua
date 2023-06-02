@@ -56,7 +56,7 @@ local function SetupPodium(orderedScores, podium)
     return podiumSpots
 end
 
-local function TeleportOntoPodium(characters, podiumSpots)
+local function TeleportOntoPodium(characters: {Instance}, podiumSpots)
     local oldPivots = {}
     local podiumCharacters = {}
     podiumSpots = table.clone(podiumSpots)
@@ -69,11 +69,12 @@ local function TeleportOntoPodium(characters, podiumSpots)
             break
         end
 
-        local rootPart = character:FindFirstChild("HumanoidRootPart")
+        local rootPart: BasePart? = character:FindFirstChild("HumanoidRootPart")
+        local humanoid: Humanoid? = character:FindFirstChildWhichIsA("Humanoid")
 
-        -- if rootPart and rootPart:CanSetNetworkOwnership() then
-        --     rootPart:SetNetworkOwner(nil)
-        -- end
+        if humanoid and humanoid:GetState() == Enum.HumanoidStateType.Seated then
+            humanoid.Jump = true
+        end
 
         table.insert(oldPivots, character:GetPivot())
         rootPart:PivotTo(spot)

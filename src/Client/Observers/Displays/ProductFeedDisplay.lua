@@ -16,6 +16,7 @@ local NetworkNamespaces = require(ReplicatedStorage.Shared.Constants.NetworkName
 local ANCESTORS = { workspace }
 local TAG = "ProductFeedDisplay"
 local LOCAL_PLAYER = Players.LocalPlayer
+local USE_RED_HACK = true
 
 local function ProductFeedDisplay()
     local products = Value({})
@@ -50,27 +51,62 @@ local function ProductFeedDisplay()
     local function EquipItem(itemId: number, assetType: string, successCallback: () -> ())
         print("Sent equip", itemId, assetType, successCallback)
 
-        avatarNetwork:Call("Equip", itemId, assetType):Then(function(ok: boolean)
-            print("Equip response")
-            if ok then
-                print("cool")
-                local humanoid = LOCAL_PLAYER.Character and LOCAL_PLAYER.Character:FindFirstChildWhichIsA("Humanoid")
-                local description = humanoid and humanoid:GetAppliedDescription()
-                AvatarEditorService:PromptSaveAvatar(description, humanoid.RigType)
+        if USE_RED_HACK then
+            local humanoid = LOCAL_PLAYER.Character and LOCAL_PLAYER.Character:FindFirstChildWhichIsA("Humanoid")
+            avatarNetwork:Fire("Equip", itemId, assetType)
+            local connectionBinAdd, connectionBinEmpty = Red.Bin()
+            local currentDescription = humanoid:GetAppliedDescription()
 
-                if successCallback then
-                    successCallback()
+            local function PromptSave(humanoidDescription: HumanoidDescription)
+                print("Prompt to save avi")
+                connectionBinEmpty()
+
+                if not humanoidDescription then
+                    return
                 end
-            else
-                warn("Server failed to equip item")
+
+                AvatarEditorService:PromptSaveAvatar(humanoidDescription, humanoid.RigType)
             end
-        end)
+
+            if currentDescription then
+                connectionBinAdd(currentDescription.Changed:Connect(function(change)
+                    if change == "Parent" then
+                        return
+                    end
+
+                    PromptSave()
+                end))
+            end
+
+            -- For some ungodly reason, Roblox will likely destroy the current HumanoidDescription and replace
+            -- it with a new one when we re-apply the description.
+            humanoid.ChildAdded:Connect(function(child: Instance)
+                if child:IsA("HumanoidDescription") then
+                    PromptSave(child)
+                end
+            end)
+
+            task.delay(8, connectionBinEmpty)
+        else
+            avatarNetwork:Call("Equip", itemId, assetType):Then(function(ok: boolean)
+                if ok then
+                    local humanoid = LOCAL_PLAYER.Character and LOCAL_PLAYER.Character:FindFirstChildWhichIsA("Humanoid")
+                    local description = humanoid and humanoid:GetAppliedDescription()
+                    AvatarEditorService:PromptSaveAvatar(description, humanoid.RigType)
+
+                    if successCallback then
+                        successCallback()
+                    end
+                else
+                    warn("Server failed to equip item")
+                end
+            end)
+        end
     end
 
     local function UnequipItem(itemId: number, assetType: string, successCallback)
         avatarNetwork:Call("Unequip", itemId, assetType):Then(function(ok: boolean)
             if ok then
-                print("cool")
                 local humanoid = LOCAL_PLAYER.Character and LOCAL_PLAYER.Character:FindFirstChildWhichIsA("Humanoid")
                 local description = humanoid and humanoid:GetAppliedDescription()
                 AvatarEditorService:PromptSaveAvatar(description, humanoid.RigType)

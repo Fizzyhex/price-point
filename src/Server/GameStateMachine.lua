@@ -1,3 +1,4 @@
+local CollectionService = game:GetService("CollectionService")
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -181,6 +182,7 @@ function GameStateMachine:Start(endCallback)
             if newState == false then
                 isRunning = false
                 endCallback()
+                self:Destroy()
                 return
             end
 
@@ -198,6 +200,14 @@ function GameStateMachine:Start(endCallback)
     end
 end
 
+function GameStateMachine:SetItemDisplay(value: Instance | nil)
+    self._itemDisplaySetter.Value = value
+end
+
+function GameStateMachine:Destroy()
+    self._itemDisplaySetter:Destroy()
+end
+
 function GameStateMachine.new(stateContainers, productPools)
     local self = setmetatable({}, GameStateMachine)
     self._roundStateContainer = stateContainers.roundStateContainer
@@ -207,6 +217,13 @@ function GameStateMachine.new(stateContainers, productPools)
     self._productPools = productPools
     self._roundsRemaining = assert(gameRules:GetAttribute("rounds"), "'rounds' game rule is not set")
     self._guesses = {}
+
+    local itemDisplaySetter = Instance.new("ObjectValue")
+    itemDisplaySetter.Name = "ItemDisplaySetter"
+    CollectionService:AddTag(itemDisplaySetter, "ItemDisplaySetter")
+    itemDisplaySetter.Parent = workspace
+    self._itemDisplaySetter = itemDisplaySetter
+
     return self
 end
 

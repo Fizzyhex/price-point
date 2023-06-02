@@ -12,6 +12,7 @@ local function ConfettiPart()
 
         local function ShootConfetti()
             local emitters = {}
+            shootEvent:Fire()
 
             for _, child in part:GetChildren() do
                 if child:IsA("ParticleEmitter") then

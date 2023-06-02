@@ -10,7 +10,7 @@ local function GameStateObserver()
             return
         end
 
-        if newState == "GameOver" then
+        if newState.phase == "GameOver" then
             GameStateChannel.RaiseGameOver()
         end
     end)

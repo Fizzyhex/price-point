@@ -10,13 +10,11 @@ local function Lantern()
         local originalBulbColor = bulb.Color
 
         local function EnableLantern()
-            print("lantern on")
             light.Enabled = true
             bulb.Color = originalBulbColor
         end
 
         local function DisableLantern()
-            print("lantern off")
             light.Enabled = false
             bulb.Color = originalBulbColor:Lerp(Color3.new(0, 0, 0), 0.5)
         end
