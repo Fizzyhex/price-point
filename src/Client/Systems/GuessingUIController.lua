@@ -15,16 +15,14 @@ local TextBox = require(ReplicatedStorage.Client.UI.Components.TextBox)
 local PrimaryButton = require(ReplicatedStorage.Client.UI.Components.PrimaryButton)
 local Nest = require(ReplicatedStorage.Client.UI.Components.Nest)
 local HorizontalListLayout = require(ReplicatedStorage.Client.UI.Components.HorizontalListLayout)
-local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.ShorthandPadding)
 
 local TextFilters = require(ReplicatedStorage.Client.UI.Util.TextFilters)
 local RoundStateContainer = require(ReplicatedStorage.Client.StateContainers.RoundStateContainer)
 
 local NetworkNamespaces = require(ReplicatedStorage.Shared.Constants.NetworkNamespaces)
 
-local gameRules = ReplicatedStorage.Assets.Configuration.GameRules
-
 local LOCAL_PLAYER = Players.LocalPlayer
+local gameRules = ReplicatedStorage.Assets.Configuration.GameRules
 
 local function GuessingUIController()
     local guessNetwork = Red.Client(NetworkNamespaces.GUESS_SUBMISSION)
@@ -34,7 +32,7 @@ local function GuessingUIController()
     local currentGuessingUi = Value(nil)
     local uiPosition = Spring(Computed(function()
         return
-            if isGuessingAvailable:get() then UDim2.fromScale(0.5, 1)
+            if isGuessingAvailable:get() then UDim2.fromScale(0.5, 0.9)
             else UDim2.new(0.5, 0, 2, 0)
     end), 10)
 
@@ -108,7 +106,6 @@ local function GuessingUIController()
                     },
 
                     HorizontalListLayout { Padding = UDim.new(0, 12) },
-                    ShorthandPadding { PaddingBottom = UDim.new(0, 36) }
                 },
             })
         end

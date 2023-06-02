@@ -28,13 +28,18 @@ local Unwrap = require(ReplicatedStorage.Client.UI.Util.Unwrap)
 local STRIPPED_PROPS = {
     "Id",
     "AvatarItemType",
-    "ItemDetails"
+    "ItemDetails",
+    "EquipCallback",
+    "UnequipCallback"
 }
 
 local function AvatarItemCard(props)
     local id = Value(Unwrap(props.Id))
     local avatarItemType = props.AvatarItemType
     local itemDetails = Value(Unwrap(props.ItemDetails))
+    local isEquipped = Value(false)
+    local equipCallback = props.EquipCallback
+    local unequipCallback = props.UnequipCallback
 
     local isOwned = Computed(function()
         if itemDetails:get() then
@@ -76,9 +81,25 @@ local function AvatarItemCard(props)
         end)
     end
 
-    local function OnPurchaseClicked()
+    local function EquipItem(itemId: number, assetType: string)
+        if equipCallback == nil or equipCallback(itemId, assetType) then
+            isEquipped:set(true)
+        end
+    end
+
+    local function UnequipItem(itemId: number, assetType: string)
+        if unequipCallback == nil or unequipCallback(itemId, assetType) then
+            isEquipped:set(false)
+        end
+    end
+
+    local function OnButtonClicked()
         if isOwned:get() then
-            -- Equip
+            if isEquipped:get() then
+                UnequipItem(itemDetails:get().Id, itemDetails:get().AssetType)
+            else
+                EquipItem(itemDetails:get().Id, itemDetails:get().AssetType)
+            end
         else
             -- Buy
             if Unwrap(avatarItemType) == Enum.AvatarItemType.Bundle then
@@ -144,10 +165,14 @@ local function AvatarItemCard(props)
                 end),
 
                 Text = Computed(function()
-                    return if isOwned:get() then "Equip" else "Purchase"
+                    if isOwned:get() then
+                        return if isEquipped:get() then "Unequip" else "Equip"
+                    else
+                        return "Purchase"
+                    end
                 end),
 
-                [OnEvent "MouseButton1Click"] = OnPurchaseClicked
+                [OnEvent "MouseButton1Click"] = OnButtonClicked
             },
 
             New "UICorner" {

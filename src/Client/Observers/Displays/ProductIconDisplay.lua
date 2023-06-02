@@ -13,6 +13,7 @@ local Background = require(ReplicatedStorage.Client.UI.Components.Background)
 local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.ShorthandPadding)
 local ProductImageCard = require(ReplicatedStorage.Client.UI.Components.ProductImageCard)
 local RoundStateContainer = require(ReplicatedStorage.Client.StateContainers.RoundStateContainer)
+local ImageScroller = require(ReplicatedStorage.Client.UI.Components.ImageScroller)
 
 local ANCESTORS = { workspace }
 
@@ -31,11 +32,13 @@ local function ProductIconDisplay()
 
             [Children] = {
                 ProductImageCard {
+                    ZIndex = 2,
                     Size = UDim2.fromScale(1, 1),
                     Image = currentProductImage,
                     ImageTransparency = 0.5,
                     BackgroundTransparency = 0.3
                 },
+
                 ShorthandPadding { Padding = UDim.new(0, 12) }
             }
         }

@@ -18,16 +18,12 @@ local Header = require(ReplicatedStorage.Client.UI.Components.Header)
 local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.ShorthandPadding)
 local Background = require(ReplicatedStorage.Client.UI.Components.Background)
 local Nest = require(ReplicatedStorage.Client.UI.Components.Nest)
-local GlobalEventSystem = require(ReplicatedStorage.Client.GlobalEventSystem)
 local Unwrap = require(ReplicatedStorage.Client.UI.Util.Unwrap)
+local SoundUtil = require(ReplicatedStorage.Shared.Util.SoundUtil)
 
 local ANCESTORS = { workspace }
-
+local RANDOM = Random.new()
 local sleep = Promise.promisify(task.wait)
-
-local function Round(x)
-    return math.floor(x + 0.5)
-end
 
 local function PriceRevealDisplay()
     return Observers.observeTag("PriceRevealDisplay", function(parent: Instance)
@@ -36,6 +32,29 @@ local function PriceRevealDisplay()
         local revealPrice = Value(nil)
         local animationPromise = nil :: typeof(Promise.new())
         local flashTransparency = Spring(Value(1), 15)
+        local sounds: { Sound } = {
+            buildup = New "Sound" {
+                Name = "DrumRoll",
+                SoundId = "rbxassetid://13611319011",
+                RollOffMinDistance = 500,
+                SoundGroup = SoundUtil.FindSoundGroup("SFX")
+            },
+
+            reveal = New "Sound" {
+                Name = "Reveal",
+                SoundId = "rbxassetid://13611346553",
+                RollOffMinDistance = 500,
+                Volume = 3,
+                SoundGroup = SoundUtil.FindSoundGroup("SFX")
+            },
+
+            itsFree = New "Sound" {
+                Name = "ItsFree",
+                SoundId = "rbxassetid://130771265",
+                RollOffMinDistance = 500,
+                SoundGroup = SoundUtil.FindSoundGroup("SFX")
+            }
+        }
 
         local uiPosition = Spring(Computed(function()
             return if isPriceRevealPhase:get() then UDim2.new() else UDim2.fromScale(0, -1)
@@ -56,6 +75,8 @@ local function PriceRevealDisplay()
                 animationPromise:cancel()
                 animationPromise = nil
             end
+
+            sounds.buildup:Play()
 
             local newUi = Background {
                 Position = uiPosition,
@@ -80,19 +101,20 @@ local function PriceRevealDisplay()
                                 AutomaticSize = Enum.AutomaticSize.None,
                                 Text = Computed(function()
                                     if displayRevealPrice:get() then
-                                        local value = Round(revealPriceSpring:get())
+                                        local value = math.ceil(revealPriceSpring:get())
 
                                         if lastPriceAnimationDisplay ~= value then
                                             if value == revealPrice:get() then
                                                 task.delay(0.8, function()
+                                                    local sfx = if value == 0 then sounds.itsFree else sounds.reveal
+                                                    sfx:Play()
                                                     flashTransparency:addVelocity(-20)
-                                                    GlobalEventSystem.onPriceRevealed:Fire()
                                                 end)
                                             end
                                         end
 
                                         lastPriceAnimationDisplay = value
-                                        return `R${Round(revealPriceSpring:get())}`
+                                        return `R${math.ceil(revealPriceSpring:get())}`
                                     else
                                         return text:get()
                                     end
@@ -146,7 +168,7 @@ local function PriceRevealDisplay()
 
         local frame = Nest {
             Parent = parent,
-            [Children] = { ui }
+            [Children] = { ui, sounds }
         }
 
         return function()

@@ -10,7 +10,8 @@ local REWARD_SCORE_SOUND_TAG = "RewardScoreSound"
 local logger = CreateLogger(script)
 
 local function PercentageDistance(a, b)
-    return 1 - (math.abs(a - b) / math.max(a, b))
+    local distance = 1 - (math.abs(a - b) / math.max(a, b))
+    return if distance == distance then distance else 0
 end
 
 local function Round(x)
@@ -56,83 +57,53 @@ local function RewardPoints(system)
         system:ResortScoreboards()
         task.wait(2)
 
-        local oldScores = scoreStateContainer:GetAll()
+        local function GiveOutRewards()
+            local oldScores = scoreStateContainer:GetAll()
 
-        for _, value in OrderScoresDescending(oldScores) do
-            local userId = value[1]
-            local score = value[2]
-            local guess = finalGuesses[userId]
-
-            if not guess then
-                continue
-            end
-
-            local player = Players:GetPlayerByUserId(userId)
-
-            if not player then
-                return
-            end
-
-            local reward = 100 * PercentageDistance(guess, price)
-
-            -- Prevent against NaN errors, as we have the potential to divide by zero here
-            if reward ~= reward then
-                reward = 0
-            end
-
-            if price == guess then
-                reward = reward * 1.5
-            end
-
-            reward = Round(reward)
-
-            if reward ~= 0 then
-                local newScore = score + reward
-                scoreStateContainer:Patch({
-                    [userId] = newScore
-                })
-
-                logger.print(`Rewarded {player} with {reward}, new score is {newScore}`)
-                PlaySoundsWithTag(REWARD_SCORE_SOUND_TAG, playbackSpeed)
-                task.wait(waitTime)
-                playbackSpeed = math.min(playbackSpeed + 0.05, 1.3)
-                waitTime = math.max(waitTime - 0.05, 0.2)
+            for _, value in OrderScoresDescending(oldScores) do
+                local userId = value[1]
+                local score = value[2]
+                local guess = finalGuesses[userId]
+    
+                if not guess then
+                    continue
+                end
+    
+                local player = Players:GetPlayerByUserId(userId)
+    
+                if not player then
+                    return
+                end
+    
+                local reward = 100 * PercentageDistance(guess, price)
+    
+                -- Prevent against NaN errors, as we have the potential to divide by zero here
+                if reward ~= reward then
+                    reward = 0
+                end
+    
+                if price == guess then
+                    reward = reward * 1.5
+                end
+    
+                reward = Round(reward)
+    
+                if reward ~= 0 then
+                    local newScore = score + reward
+                    scoreStateContainer:Patch({
+                        [userId] = newScore
+                    })
+    
+                    logger.print(`Rewarded {player} with {reward}, new score is {newScore}`)
+                    PlaySoundsWithTag(REWARD_SCORE_SOUND_TAG, playbackSpeed)
+                    task.wait(waitTime)
+                    playbackSpeed = math.min(playbackSpeed + 0.05, 1.3)
+                    waitTime = math.max(waitTime - 0.05, 0.2)
+                end
             end
         end
 
-        -- OrderedScoreIterator(finalGuesses, function(playerId: number, guess: number)
-        --     local player = Players:GetPlayerByUserId(playerId)
-
-        --     if not player then
-        --         return
-        --     end
-
-        --     local reward = 100 * PercentageDistance(guess, price)
-
-        --     -- Prevent against NaN errors, as we have the potential to divide by zero here
-        --     if reward ~= reward then
-        --         reward = 0
-        --     end
-
-        --     if price == guess then
-        --         reward = reward * 1.5
-        --     end
-
-        --     reward = Round(reward)
-
-        --     if reward ~= 0 then
-        --         local currentScore = scoreStateContainer:Get(playerId, 0)
-        --         local newScore = currentScore + reward
-        --         scoreStateContainer:Patch({
-        --             [playerId] = newScore
-        --         })
-
-        --         logger.print(`Rewarded {player} with {reward}, new score is {newScore}`)
-        --         task.wait(waitTime)
-        --         waitTime = math.max(waitTime - 0.05, 0.2)
-        --     end
-        -- end)
-
+        GiveOutRewards()
         task.wait(1)
         system:ResortScoreboards()
         logger.print("New scores:", scoreStateContainer:GetAll())

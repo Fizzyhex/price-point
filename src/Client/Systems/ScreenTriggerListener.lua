@@ -18,11 +18,23 @@ local function ScreenTriggerListener()
     ZoneTriggerChannel.ObserveScreenTriggerEnter(function(screen: SurfaceGui)
         logger.assert(screen, "ScreenTrigger does not point to an instance")
         Toggle(screen, true)
+        local part = screen:FindFirstAncestorWhichIsA("BasePart")
+        local sound: Sound = part and part:FindFirstChild("ScreenShowSound")
+
+        if sound then
+            sound:Play()
+        end
     end)
 
     ZoneTriggerChannel.ObserveScreenTriggerExit(function(screen: SurfaceGui)
         logger.assert(screen, "ScreenTrigger does not point to an instance")
         Toggle(screen, false)
+        local part = screen:FindFirstAncestorWhichIsA("BasePart")
+        local sound: Sound = part and part:FindFirstChild("ScreenHideSound")
+
+        if sound then
+            sound:Play()
+        end
     end)
 end
 

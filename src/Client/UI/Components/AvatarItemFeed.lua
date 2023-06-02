@@ -20,9 +20,11 @@ local Observer = Fusion.Observer
 local Cleanup = Fusion.Cleanup
 local Computed = Fusion.Computed
 
-local function ProductFeed(props)
+local function AvatarItemFeed(props)
     local products = props.Products
     local avatarItemArray = Value({})
+    local equipCallback = props.EquipCallback
+    local unequipCallback = props.UnequipCallback
     local itemDetailsValue = Computed(function()
         local data = {}
 
@@ -71,7 +73,7 @@ local function ProductFeed(props)
     task.spawn(UpdateItemData)
 
     return Background {
-        Name = "ProductFeedDisplay",
+        Name = "AvatarItemFeedDisplay",
         Size = props.Size,
         Position = props.Position,
         AnchorPoint = props.AnchorPoint,
@@ -97,7 +99,9 @@ local function ProductFeed(props)
                             Id = itemDetails.Id,
                             AvatarItemType = itemDetails.InjectedType,
                             ItemDetails = itemDetails,
-                            Size = UDim2.new(1, 0, 0, 100)
+                            Size = UDim2.new(1, 0, 0, 100),
+                            EquipCallback = equipCallback,
+                            UnequipCallback = unequipCallback
                         }
                     end, Fusion.cleanup),
 
@@ -127,4 +131,4 @@ local function ProductFeed(props)
     }
 end
 
-return ProductFeed
+return AvatarItemFeed

@@ -186,6 +186,14 @@ function MarketplacePreviewUtil.CreateAssetPreview(asset: Instance)
         end
     end
 
+    local classPreviewPrefab = catalogModels.ClassPreviews:FindFirstChild(asset.ClassName)
+
+    if classPreviewPrefab then
+        local classPreview = classPreviewPrefab:Clone()
+        asset.Parent = classPreview
+        return classPreview
+    end
+
     if asset:IsA("ShirtGraphic") then
         local tshirtDisplay = catalogModels.ShirtGraphicDisplay:Clone()
         asset.Parent = tshirtDisplay

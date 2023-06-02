@@ -112,7 +112,7 @@ end
 
 function GameStateMachine:PickNextProduct()
     if self._currentProduct then
-        local currentProducts = self._productFeedStateContainer:GetAll()
+        local currentProducts = self._ProductFeedStateContainer:GetAll()
 
         if #currentProducts > 10 then
             table.remove(currentProducts, 1)
@@ -122,7 +122,7 @@ function GameStateMachine:PickNextProduct()
             id = self._currentProduct.Id or self._currentProduct.AssetId,
             type = if self._currentProduct.BundleType then Enum.AvatarItemType.Bundle else Enum.AvatarItemType.Asset
         })
-        self._productFeedStateContainer:Patch(currentProducts)
+        self._ProductFeedStateContainer:Patch(currentProducts)
     end
 
     local product = self:_GetRandomProduct()
@@ -203,7 +203,7 @@ function GameStateMachine.new(stateContainers, productPools)
     self._roundStateContainer = stateContainers.roundStateContainer
     self._scoreStateContainer = stateContainers.scoreStateContainer
     self._guessStateContainer = stateContainers.guessStateContainer
-    self._productFeedStateContainer = stateContainers.productFeedStateContainer
+    self._ProductFeedStateContainer = stateContainers.ProductFeedStateContainer
     self._productPools = productPools
     self._roundsRemaining = assert(gameRules:GetAttribute("rounds"), "'rounds' game rule is not set")
     self._guesses = {}

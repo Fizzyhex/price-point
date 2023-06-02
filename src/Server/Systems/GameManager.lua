@@ -13,12 +13,12 @@ local logger = CreateLogger(script)
 
 local STATE_CONTAINER_NAMESPACES = {
     roundStateContainer = NetworkNamespaces.ROUND_STATE_CONTAINER,
-    productFeedStateContainer = NetworkNamespaces.PRODUCT_FEED_STATE_CONTAINER,
+    ProductFeedStateContainer = NetworkNamespaces.PRODUCT_FEED_STATE_CONTAINER,
     scoreStateContainer = NetworkNamespaces.SCORE_STATE_CONTAINER,
     guessStateContainer = NetworkNamespaces.GUESS_STATE_CONTAINER
 }
 
-local USE_TEST_PRODUCTS = false
+local USE_TEST_PRODUCTS = true
 local TEST_PRODUCTS = {
     -- {
     --     -- Werewolf animation pack
@@ -35,17 +35,24 @@ local TEST_PRODUCTS = {
     -- },
 
     -- {
-    --     -- Canvas Shoes - Pink (bundle of shoes)
+    --     -- Canvas Shoes - Pink (shoes bundle)
     --     id = 877,
     --     itemType = "Bundle",
     --     price = 50
     -- },
 
-    -- Trim (head)
+    -- {
+    --     -- Trim (head)
+    --     id = 6340227,
+    --     itemType = "Asset",
+    --     price = 0
+    -- },
+
     {
-        id = 6340227,
+        -- I feel Bricky 2 (pants)
+        id = 23571257,
         itemType = "Asset",
-        price = 0
+        price = 50
     }
 }
 

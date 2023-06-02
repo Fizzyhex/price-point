@@ -52,7 +52,7 @@ local function ItemTitleDisplay()
 
             if data.year and data.type then
                 if data.year <= currentYear - 13 then
-                    return `An old {cleanType} from {data.year}`
+                    return `Old {cleanType} from {data.year}`
                 elseif data.year <= currentYear - 8 then
                     return `A classic {cleanType} from {data.year}`
                 else

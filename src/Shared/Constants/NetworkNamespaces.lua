@@ -4,7 +4,9 @@ local NETWORK_NAMESPACES = {
     GUESS_STATE_CONTAINER = "GuessState",
     PRODUCT_FEED_STATE_CONTAINER = "ProductFeedState",
     GUESS_SUBMISSION = "Guess",
-    SCOREBOARD = "Scores"
+    SCOREBOARD = "Scores",
+    AVATAR = "Avatar",
+    MARKETPLACE_REPLICATION = "Marketplace"
 }
 
 return NETWORK_NAMESPACES

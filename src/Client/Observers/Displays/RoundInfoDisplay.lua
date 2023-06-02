@@ -73,6 +73,7 @@ local function RoundInfoDisplay()
                 Timer {
                     LayoutOrder = 1,
                     Time = timeRemaining,
+                    UrgencyStart = 8,
                     TextScaled = true,
 
                     [Children] = ScaleOut {

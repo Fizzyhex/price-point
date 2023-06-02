@@ -4,6 +4,8 @@ local CoreEvent = require(ReplicatedStorage.Shared.Util.CoreEvent)
 
 local GameStateChannel = {}
 
-GameStateChannel.RaisePriceRevealed, GameStateChannel.ObservePriceRevealed = CoreEvent()
+GameStateChannel.RaisePriceRevealBegun, GameStateChannel.ObservePriceRevealBegun = CoreEvent()
+GameStateChannel.RaisePriceRevealEnded, GameStateChannel.ObservePriceRevealEnded = CoreEvent()
+GameStateChannel.RaiseGameOver, GameStateChannel.ObserveGameOver = CoreEvent()
 
 return GameStateChannel

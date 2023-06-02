@@ -48,7 +48,7 @@ local function SetModelScale(model: Model, scale: number)
 
     local humanoid = model:FindFirstChildWhichIsA("Humanoid")
 
-    if humanoid then
+    if humanoid and humanoid.RigType == Enum.RigType.R15 then
         local rootPart = humanoid.RootPart
 
         if rootPart then
@@ -125,19 +125,18 @@ function ServerItemProjector:SetModel(model: BasePart | Model, humanoidDescripti
 
     if humanoid then
         local animation = model:FindFirstChildWhichIsA("Animation")
-        local animator = humanoid.Animator
+        local animator = humanoid:FindFirstAncestorWhichIsA("Animator")
 
-        if animation then
+        if animator and animation then
             local animationTrack = animator:LoadAnimation(animation) :: AnimationTrack
             animationTrack.Looped = true
             animationTrack.Priority = Enum.AnimationPriority.Action
             animationTrack:Play()
+            local idleAnimationTrack = animator:LoadAnimation(mannequinIdle) :: AnimationTrack
+            idleAnimationTrack.Looped = true
+            idleAnimationTrack.Priority = Enum.AnimationPriority.Core
+            idleAnimationTrack:Play(0)
         end
-
-        local idleAnimationTrack = animator:LoadAnimation(mannequinIdle) :: AnimationTrack
-        idleAnimationTrack.Looped = true
-        idleAnimationTrack.Priority = Enum.AnimationPriority.Core
-        idleAnimationTrack:Play(0)
     end
 end
 

@@ -3,10 +3,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Value = Fusion.Value
 
-local ProductFeed = require(ReplicatedStorage.Client.UI.Components.ProductFeed)
+local AvatarItemFeed = require(ReplicatedStorage.Client.UI.Components.AvatarItemFeed)
 
 return function(target: Instance)
-    local story = ProductFeed {
+    local story = AvatarItemFeed {
         Parent = target,
         Size = UDim2.new(1, 0, 1, -90),
         Products = Value({

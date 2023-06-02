@@ -15,6 +15,7 @@ local function ScoreboardSoundPlayer()
         local sound = FindScoreboardSound(scoreboard, "ResortSound")
 
         if sound then
+            task.wait(0.1)
             sound:Play()
         end
     end)

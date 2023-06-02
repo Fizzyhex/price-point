@@ -9,9 +9,14 @@ local ANCESTORS = { workspace }
 local function PriceRevealSounds()
     return Observers.observeTag("PriceRevealSounds", function(part: BasePart)
         local revealSound: Sound = part:WaitForChild("RevealSound")
+        local beginRevealSound: Sound = part:WaitForChild("WindupSound")
         local binAdd, binEmpty = Red.Bin()
 
-        binAdd(GameStateChannel.ObservePriceRevealed(function()
+        binAdd(GameStateChannel.ObservePriceRevealBegun(function()
+            beginRevealSound:Play()
+        end))
+
+        binAdd(GameStateChannel.ObservePriceRevealing(function()
             revealSound:Play()
         end))
 

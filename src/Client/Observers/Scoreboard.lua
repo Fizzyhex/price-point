@@ -87,7 +87,7 @@ local function Scoreboard()
             local index = 0
             local scores = ScoreStateContainer:GetAll()
             local lenBlinderDisplays = #TableUtil.Values(blinderDisplays)
-            local isReordered = true
+            local isReordered = false
             print("Client scoreboard sees these scores:", scores)
 
             OrderedScoreIterator(scores, function(userId, score)
