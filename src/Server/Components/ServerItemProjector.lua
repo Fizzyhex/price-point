@@ -80,12 +80,44 @@ function ServerItemProjector:Construct()
     end
 end
 
-function ServerItemProjector:SetModel(model: BasePart | Model, humanoidDescription: HumanoidDescription?)
+function ServerItemProjector:_DestroyCurrentModel()
     local currentModel = self._container:GetChildren()[1]
 
     if currentModel then
         currentModel:Destroy()
     end
+end
+
+function ServerItemProjector:_HandleCharacter(character, humanoidDescription: HumanoidDescription?)
+    local humanoid: Humanoid = character:FindFirstChildWhichIsA("Humanoid")
+
+    if humanoid.RootPart then
+        humanoid.RootPart.Anchored = true
+    end
+
+    if humanoidDescription then
+        humanoid:ApplyDescription(humanoidDescription)
+    else
+        -- Reapply descriptions for heads
+        humanoid:ApplyDescription(humanoid:GetAppliedDescription())
+    end
+end
+
+function ServerItemProjector:_LoadIdleAnimation(humanoid: Humanoid)
+    local animator = humanoid:FindFirstChildWhichIsA("Animator")
+
+    if not animator then
+        return
+    end
+
+    local animationTrack = animator:LoadAnimation(mannequinIdle) :: AnimationTrack
+    animationTrack.Looped = true
+    animationTrack.Priority = Enum.AnimationPriority.Core
+    animationTrack:Play()
+end
+
+function ServerItemProjector:SetModel(model: BasePart | Model, humanoidDescription: HumanoidDescription?)
+    self:_DestroyCurrentModel()
 
     if not model then
         return
@@ -93,22 +125,21 @@ function ServerItemProjector:SetModel(model: BasePart | Model, humanoidDescripti
 
     local humanoid = model:FindFirstChildWhichIsA("Humanoid")
 
-    if model:IsA("BasePart") then
-        local primaryPart = model
-        model = Instance.new("Model")
-        model.Name = primaryPart.Name
-        model.PrimaryPart = primaryPart
-        primaryPart.Parent = model
-    end
-
-    if humanoid and humanoid.RootPart then
-        humanoid.RootPart.Anchored = true
-    end
-
     if humanoid then
         -- We need to parent characters before we can mess with humanoid descriptions
         model.Parent = self._container
     end
+
+    self:_HandleCharacter(model)
+
+    -- This turns parts into models, but is it needed?
+    -- if model:IsA("BasePart") then
+    --     local primaryPart = model
+    --     model = Instance.new("Model")
+    --     model.Name = primaryPart.Name
+    --     model.PrimaryPart = primaryPart
+    --     primaryPart.Parent = model
+    -- end
 
     if humanoidDescription then
         humanoid:ApplyDescription(humanoidDescription)
@@ -125,7 +156,7 @@ function ServerItemProjector:SetModel(model: BasePart | Model, humanoidDescripti
 
     if humanoid then
         local animation = model:FindFirstChildWhichIsA("Animation")
-        local animator = humanoid:FindFirstAncestorWhichIsA("Animator")
+        local animator = humanoid:FindFirstChildWhichIsA("Animator")
 
         if animator and animation then
             local animationTrack = animator:LoadAnimation(animation) :: AnimationTrack

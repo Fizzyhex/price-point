@@ -18,7 +18,7 @@ local STATE_CONTAINER_NAMESPACES = {
     guessStateContainer = NetworkNamespaces.GUESS_STATE_CONTAINER
 }
 
-local USE_TEST_PRODUCTS = true
+local USE_TEST_PRODUCTS = false
 local TEST_PRODUCTS = {
     -- {
     --     -- Werewolf animation pack
@@ -70,9 +70,9 @@ local function MakeProductPools()
     return productPools
 end
 
-local GameManager = {}
+local GameLoop = {}
 
-function GameManager:OnStart()
+function GameLoop:OnStart()
     logger.print("Starting game state machine...")
     local productPools = MakeProductPools()
     local stateContainers = {}
@@ -103,4 +103,4 @@ function GameManager:OnStart()
     RunGame()
 end
 
-return GameManager
+return GameLoop
