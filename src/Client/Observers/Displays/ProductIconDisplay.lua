@@ -7,6 +7,7 @@ local New = Fusion.New
 local Children = Fusion.Children
 local Value = Fusion.Value
 local Computed = Fusion.Computed
+local Spring = Fusion.Spring
 
 local Header = require(ReplicatedStorage.Client.UI.Components.Header)
 local Background = require(ReplicatedStorage.Client.UI.Components.Background)
@@ -19,31 +20,48 @@ local ANCESTORS = { workspace }
 
 local function ProductIconDisplay()
     return Observers.observeTag("ProductIconDisplay", function(parent: Instance)
+        local isVisible = Value(false)
         local currentProductData = Value(nil)
         local currentProductImage = Computed(function()
             local data = currentProductData:get()
             return if data then data.image else ""
         end)
 
+        local stopObservingRoundState = RoundStateContainer:Observe(function(_, newState)
+            isVisible:set(newState.phase ~= "Intermission" and newState.phase ~= "GameOver")
+        end)
+
         local roundStateHook = RoundStateContainer.FusionUtil.StateHook(RoundStateContainer, currentProductData, "productData")
-        local frame = Background {
+        local frame = New "CanvasGroup" {
+            Name = "ProductIconDisplay",
             Parent = parent,
-            Archivable = false,
+            Size = UDim2.fromScale(1, 1),
+
+            GroupTransparency = Spring(Computed(function()
+                return if isVisible:get() then 0.5 else 1
+            end)),
 
             [Children] = {
-                ProductImageCard {
-                    ZIndex = 2,
-                    Size = UDim2.fromScale(1, 1),
-                    Image = currentProductImage,
-                    ImageTransparency = 0.5,
-                    BackgroundTransparency = 0.3
-                },
+                Background {
+                    Archivable = false,
 
-                ShorthandPadding { Padding = UDim.new(0, 12) }
+                    [Children] = {
+                        ProductImageCard {
+                            ZIndex = 2,
+                            Size = UDim2.fromScale(1, 1),
+                            Image = currentProductImage,
+                            ImageTransparency = 0,
+                            BackgroundTransparency = 0.3
+                        },
+
+                        ShorthandPadding { Padding = UDim.new(0, 12) }
+                    }
+                }
             }
         }
 
         return function()
+            stopObservingRoundState()
             roundStateHook:Disconnect()
             frame:Destroy()
         end

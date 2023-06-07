@@ -10,6 +10,43 @@ local function GetLargestScalar(vector: Vector3)
     return math.max(math.max(vector.X,   vector.Y), vector.Z)
 end
 
+local function PartToModel(part: BasePart): Model
+    local model = Instance.new("Model")
+    model.Name = part.Name
+    model.PrimaryPart = part
+    part.Parent = model
+    return model
+end
+
+local function GetAnimator(controller: Humanoid | AnimationController): Animator
+    local animator = controller:FindFirstChildWhichIsA("Animator")
+
+    if animator then
+        return animator
+    else
+        return Instance.new("Animator", controller)
+    end
+end
+
+local function GetProjectionAnimator(model: Model)
+    local animatorContainer = model:FindFirstChildWhichIsA("Humanoid") or model:FindFirstChildWhichIsA("AnimationController")
+
+    if not animatorContainer then
+        return
+    end
+
+    local animator = GetAnimator(animatorContainer)
+    return animator
+end
+
+local function LoadIdleAnimation(humanoid: Humanoid)
+    local animator = GetAnimator(humanoid)
+    local animationTrack = animator:LoadAnimation(mannequinIdle) :: AnimationTrack
+    animationTrack.Looped = true
+    animationTrack.Priority = Enum.AnimationPriority.Core
+    animationTrack:Play()
+end
+
 local function ResizeModel(model: Model, scale: number)
     local pivot = model:GetPivot().Position
 
@@ -23,14 +60,14 @@ local function ResizeModel(model: Model, scale: number)
 	end
 end
 
-local function ScaleHumanoid(humanoid: Humanoid, scaleBy: number)
-    local scalers = {
-        humanoid:FindFirstChild("BodyDepthScale"),
-        humanoid:FindFirstChild("BodyWidthScale"),
-        humanoid:FindFirstChild("BodyHeightScale"),
-        humanoid:FindFirstChild("HeadScale")
-    } :: { ObjectValue }
+local function LoadProjectionAnimation(animator: Animator, animation: Animation)
+    local track = animator:LoadAnimation(animation)
+    track.Priority = Enum.AnimationPriority.Action
+    track.Looped = true
+    return track
+end
 
+local function ScaleHumanoid(humanoid: Humanoid, scaleBy: number)
     local scales = {"DepthScale", "HeadScale", "HeightScale", "WidthScale"}
     local newDescription = humanoid:GetAppliedDescription():Clone()
 
@@ -48,7 +85,7 @@ local function SetModelScale(model: Model, scale: number)
 
     local humanoid = model:FindFirstChildWhichIsA("Humanoid")
 
-    if humanoid and humanoid.RigType == Enum.RigType.R15 then
+    if humanoid and (humanoid.RigType == Enum.RigType.R15 or model:FindFirstChild("LowerTorso")) then
         local rootPart = humanoid.RootPart
 
         if rootPart then
@@ -88,7 +125,7 @@ function ServerItemProjector:_DestroyCurrentModel()
     end
 end
 
-function ServerItemProjector:_HandleCharacter(character, humanoidDescription: HumanoidDescription?)
+function ServerItemProjector:_HandleProjectionCharacter(character, humanoidDescription: HumanoidDescription?)
     local humanoid: Humanoid = character:FindFirstChildWhichIsA("Humanoid")
 
     if humanoid.RootPart then
@@ -101,72 +138,37 @@ function ServerItemProjector:_HandleCharacter(character, humanoidDescription: Hu
         -- Reapply descriptions for heads
         humanoid:ApplyDescription(humanoid:GetAppliedDescription())
     end
+
+    LoadIdleAnimation(humanoid)
 end
 
-function ServerItemProjector:_LoadIdleAnimation(humanoid: Humanoid)
-    local animator = humanoid:FindFirstChildWhichIsA("Animator")
-
-    if not animator then
-        return
-    end
-
-    local animationTrack = animator:LoadAnimation(mannequinIdle) :: AnimationTrack
-    animationTrack.Looped = true
-    animationTrack.Priority = Enum.AnimationPriority.Core
-    animationTrack:Play()
-end
-
-function ServerItemProjector:SetModel(model: BasePart | Model, humanoidDescription: HumanoidDescription?)
+function ServerItemProjector:SetModel(projection: BasePart | Model, humanoidDescription: HumanoidDescription?)
     self:_DestroyCurrentModel()
 
-    if not model then
+    if projection == nil then
         return
     end
 
-    local humanoid = model:FindFirstChildWhichIsA("Humanoid")
-
-    if humanoid then
-        -- We need to parent characters before we can mess with humanoid descriptions
-        model.Parent = self._container
+    if projection:IsA("BasePart") then
+        projection = PartToModel(projection)
     end
 
-    self:_HandleCharacter(model)
+    projection:PivotTo(self._root:GetPivot())
+    --[!] We need to parent characters before we can mess with humanoid descriptions
+    projection.Parent = self._container
+    SetModelScale(projection, GetLargestScalar(self._root.Size))
 
-    -- This turns parts into models, but is it needed?
-    -- if model:IsA("BasePart") then
-    --     local primaryPart = model
-    --     model = Instance.new("Model")
-    --     model.Name = primaryPart.Name
-    --     model.PrimaryPart = primaryPart
-    --     primaryPart.Parent = model
-    -- end
-
-    if humanoidDescription then
-        humanoid:ApplyDescription(humanoidDescription)
+    if projection:FindFirstChildWhichIsA("Humanoid") then
+        self:_HandleProjectionCharacter(projection)
     end
 
-    SetModelScale(model, GetLargestScalar(self._root.Size))
-    model:PivotTo(self._root:GetPivot())
-    model.Parent = self._container
+    local animation = projection:FindFirstChildWhichIsA("Animation")
 
-    if humanoidDescription == nil and humanoid and humanoid.RootPart  then
-        -- Reapply the current description for heads
-        humanoid:ApplyDescription(humanoid:GetAppliedDescription())
-    end
+    if animation then
+        local animator = GetProjectionAnimator(projection)
 
-    if humanoid then
-        local animation = model:FindFirstChildWhichIsA("Animation")
-        local animator = humanoid:FindFirstChildWhichIsA("Animator")
-
-        if animator and animation then
-            local animationTrack = animator:LoadAnimation(animation) :: AnimationTrack
-            animationTrack.Looped = true
-            animationTrack.Priority = Enum.AnimationPriority.Action
-            animationTrack:Play()
-            local idleAnimationTrack = animator:LoadAnimation(mannequinIdle) :: AnimationTrack
-            idleAnimationTrack.Looped = true
-            idleAnimationTrack.Priority = Enum.AnimationPriority.Core
-            idleAnimationTrack:Play(0)
+        if animator then
+            LoadProjectionAnimation(animator, animation):Play()
         end
     end
 end

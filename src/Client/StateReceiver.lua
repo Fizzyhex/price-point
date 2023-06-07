@@ -27,6 +27,8 @@ local function StateReceiver(namespace: string)
         stateContainer:Patch(payload)
     end)
 
+    network:Fire("Ready")
+
     return stateContainer
 end
 

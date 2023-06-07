@@ -12,14 +12,17 @@ local function UIThemeColor()
     return Observers.observeTag("UIThemeColor", function(instance: Instance)
         local property = "Color"
 
-        if instance:IsA("GuiObject") then
+        if instance:IsA("TextLabel") then
+            property = "TextColor3"
+        elseif instance:IsA("GuiObject") then
             property = "BackgroundColor3"
         end
 
         local originalColor = instance[property]
+        local newColorName = instance:GetAttribute("UIThemeColor") or "background"
 
         Hydrate(instance) {
-            [property] = ThemeProvider:GetColor("background")
+            [property] = ThemeProvider:GetColor(newColorName)
         }
 
         return function()

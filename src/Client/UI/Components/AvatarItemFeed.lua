@@ -95,7 +95,7 @@ local function AvatarItemFeed(props)
                 [Children] = {
                     ForPairs(itemDetailsValue, function(index, itemDetails: table)
                         return index, AvatarItemCard {
-                            LayoutOrder = -index,
+                            LayoutOrder = index,
                             Id = itemDetails.Id,
                             AvatarItemType = itemDetails.InjectedType,
                             ItemDetails = itemDetails,
@@ -115,7 +115,7 @@ local function AvatarItemFeed(props)
 
                 [Children] = {
                     Label {
-                        Text = "note that i get a 40% commission for items you buy through the game. thanks!",
+                        Text = "♥ i get a 40% commission on any items you buy through the game.",
                         TextWrapped = true,
                         Position = UDim2.fromScale(0.5, 0),
                         AnchorPoint = Vector2.new(0.5, 0),

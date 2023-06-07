@@ -10,10 +10,22 @@ local logger = CreateLogger(script)
 
 local function StateReplicator(namespace: string, stateContainer: typeof(BasicStateContainer.new()))
     local network = Red.Server(namespace, {"Replicate"})
+    local registeredPlayers = {}
 
-    local function OnPlayerAdded(player: Player)
+    network:On("Ready", function(player: Player)
+        if registeredPlayers[player] then
+            print(`{player} ({player.UserId}) requested an initial payload several times - ignoring request`)
+            return
+        end
+
+        registeredPlayers[player] = true
         local data = stateContainer:GetAll()
         local payload = {}
+
+        if next(data) == nil then
+            -- Don't create an empty payload
+            return
+        end
 
         for key, value in data do
             payload[key] = {value}
@@ -21,6 +33,10 @@ local function StateReplicator(namespace: string, stateContainer: typeof(BasicSt
 
         logger.print(`Sending init payload to {player} for "{namespace}"`, payload)
         network:Fire(player, "Replicate", payload)
+    end)
+
+    local function OnPlayerRemoving(player: Player)
+        registeredPlayers[player] = nil
     end
 
     stateContainer.onStateChanged:Connect(function(oldState, newState)
@@ -45,10 +61,10 @@ local function StateReplicator(namespace: string, stateContainer: typeof(BasicSt
     end)
 
     for _, player in Players:GetPlayers() do
-        OnPlayerAdded(player)
+        OnPlayerRemoving(player)
     end
 
-    Players.PlayerAdded:Connect(OnPlayerAdded)
+    Players.PlayerRemoving:Connect(OnPlayerRemoving)
 end
 
 return StateReplicator

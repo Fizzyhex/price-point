@@ -31,16 +31,19 @@ local function ItemProjector()
         local effectContainer = Instance.new("Folder")
         effectContainer.Name = "ClientEffectContainer"
         effectContainer.Parent = instance
+        local root: BasePart = instance:WaitForChild("Root")
 
         binAdd(container.ChildAdded:Connect(function(child: Model | BasePart)
-            local goal = child:GetPivot()
+            local goalPivot = instance:GetPivot()
+            local startPivot = goalPivot - Vector3.new(0, root.Size.Y, 0)
             local pivotTweener = PivotTweener(child)
             local tween = TweenService:Create(
                 pivotTweener,
                 TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-                { Value = goal }
+                { Value = goalPivot }
             )
-            child:PivotTo(goal + Vector3.new(0, 5, 0))
+            pivotTweener.Value = startPivot
+            child:PivotTo(startPivot)
             tween:Play()
             tween.Completed:Wait()
             pivotTweener:Destroy()

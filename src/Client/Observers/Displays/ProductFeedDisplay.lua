@@ -6,12 +6,14 @@ local Observers = require(ReplicatedStorage.Packages.Observers)
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Value = Fusion.Value
+local Children = Fusion.Children
 
 local ProductFeedStateContainer = require(ReplicatedStorage.Client.StateContainers.ProductFeedStateContainer)
 local AvatarItemFeed = require(ReplicatedStorage.Client.UI.Components.AvatarItemFeed)
 local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 local Red = require(ReplicatedStorage.Packages.Red)
 local NetworkNamespaces = require(ReplicatedStorage.Shared.Constants.NetworkNamespaces)
+local Nest = require(ReplicatedStorage.Client.UI.Components.Nest)
 
 local ANCESTORS = { workspace }
 local TAG = "ProductFeedDisplay"
@@ -125,11 +127,15 @@ local function ProductFeedDisplay()
     })
 
     Observers.observeTag(TAG, function(target: Instance)
-        local ui = AvatarItemFeed {
-            Parent = target,
-            Products = products,
-            EquipCallback = EquipItem,
-            UnequipCallback = UnequipItem
+        local ui = Nest {
+            [Children] = {
+                AvatarItemFeed {
+                    Parent = target,
+                    Products = products,
+                    EquipCallback = EquipItem,
+                    UnequipCallback = UnequipItem
+                }
+            }
         }
 
         return function()

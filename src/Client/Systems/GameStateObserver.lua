@@ -12,6 +12,8 @@ local function GameStateObserver()
 
         if newState.phase == "GameOver" then
             GameStateChannel.RaiseGameOver()
+        elseif oldState.phase == "PriceReveal" then
+            GameStateChannel.RaiseRoundOver()
         end
     end)
 
