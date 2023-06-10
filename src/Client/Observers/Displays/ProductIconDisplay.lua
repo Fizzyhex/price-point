@@ -38,7 +38,7 @@ local function ProductIconDisplay()
             Size = UDim2.fromScale(1, 1),
 
             GroupTransparency = Spring(Computed(function()
-                return if isVisible:get() then 0.5 else 1
+                return if isVisible:get() then 0.15 else 1
             end)),
 
             [Children] = {

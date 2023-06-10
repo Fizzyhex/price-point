@@ -104,7 +104,6 @@ local function RewardPoints(system)
         end
 
         GiveOutRewards()
-        task.wait(1)
         system:ResortScoreboards()
         logger.print("New scores:", scoreStateContainer:GetAll())
         task.wait(2)

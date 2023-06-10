@@ -13,6 +13,7 @@ local Background = require(ReplicatedStorage.Client.UI.Components.Background)
 local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.ShorthandPadding)
 local RoundStateContainer = require(ReplicatedStorage.Client.StateContainers.RoundStateContainer)
 local Red = require(ReplicatedStorage.Packages.Red)
+local ThemeProvider = require(ReplicatedStorage.Client.UI.Util.ThemeProvider)
 
 local ANCESTORS = { workspace }
 
@@ -49,18 +50,22 @@ local function ItemTitleDisplay()
 
             local currentYear = os.date("%Y")
             local cleanType = if data.type then PascalToWhitespace(data.type) else nil
+            local currentAccentColor = ThemeProvider:GetColor("accent"):get()
+            local formattedCleanType = cleanType and `<font color="#{currentAccentColor:ToHex()}">{cleanType}</font>`
 
             if data.year and data.type then
                 if data.year <= currentYear - 13 then
-                    return `Old {cleanType} from {data.year}`
+                    return `A decade-old {formattedCleanType} from {data.year}!`
                 elseif data.year <= currentYear - 8 then
-                    return `A classic {cleanType} from {data.year}`
+                    return `A {formattedCleanType} from {data.year}!`
+                elseif data.year == currentYear then
+                    return `A new {formattedCleanType} from {data.year}.`
                 else
-                    return `{cleanType}, from {data.year}`
+                    return `A {formattedCleanType} from {data.year}.`
                 end
             end
 
-            return if data.type then cleanType else nil
+            return if data.type then formattedCleanType else nil
         end)
 
         binAdd(RoundStateContainer.FusionUtil.StateHook(RoundStateContainer, currentProductData, "productData"))
@@ -105,12 +110,17 @@ local function ItemTitleDisplay()
                     TextScaled = true,
 
                     AutomaticSize = Enum.AutomaticSize.None,
+                    RichText = true,
 
                     Text = Computed(function()
                         local phase = currentPhase:get()
 
                         if phase == "Intermission" then
-                            return "A new game will start shortly."
+                            if math.random(1, 100) == 1 then
+                                return "a new game WON'T start shortly. hehe"
+                            else
+                                return "A new game will start shortly."
+                            end
                         elseif phase == "GameOver" then
                             return "Thanks for playing!"
                         else

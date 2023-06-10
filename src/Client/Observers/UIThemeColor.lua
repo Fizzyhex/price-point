@@ -16,6 +16,8 @@ local function UIThemeColor()
             property = "TextColor3"
         elseif instance:IsA("GuiObject") then
             property = "BackgroundColor3"
+        elseif instance:IsA("Decal") or instance:IsA("Texture") then
+            property = "Color3"
         end
 
         local originalColor = instance[property]

@@ -1,7 +1,7 @@
 local THEME_COLORS = {
     accent = {
         light = Color3.fromRGB(30, 243, 65),
-        dark = Color3.fromRGB(43, 217, 72)
+        dark = Color3.fromRGB(110, 247, 132)
     },
 
     primary = {

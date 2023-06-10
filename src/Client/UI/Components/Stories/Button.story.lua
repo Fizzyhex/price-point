@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Children = Fusion.Children
+local Value = Fusion.Value
 
 local Button = require(ReplicatedStorage.Client.UI.Components.Button)
 local PrimaryButton = require(ReplicatedStorage.Client.UI.Components.PrimaryButton)
@@ -12,6 +13,8 @@ local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.Shorthan
 local TextFilters = require(ReplicatedStorage.Client.UI.Util.TextFilters)
 
 return function(target: Instance)
+    local isHeld = Value(false)
+
     local story = Nest {
         Parent = target,
 
@@ -36,6 +39,15 @@ return function(target: Instance)
 
             PrimaryButton {
                 Text = "Primary Button"
+            },
+
+            PrimaryButton {
+                Text = "Toggle Button",
+                IsHeld = isHeld,
+
+                OnClick = function()
+                    isHeld:set(not isHeld:get())
+                end
             },
         }
     }

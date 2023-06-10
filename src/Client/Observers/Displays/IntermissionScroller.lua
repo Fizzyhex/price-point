@@ -36,13 +36,14 @@ local function IntermissionScroller()
                     Velocity = Vector2.new(10, 10),
                     Size = UDim2.fromScale(2, 2),
                     AnchorPoint = Vector2.new(0.5, 0.5),
+                    ZIndex = 2,
                     Image = "rbxassetid://13675238365"
                 },
 
                 ImageScroller {
                     Name = "QuestionMarks",
                     TileSize = UDim2.fromOffset(100, 100),
-                    Velocity = Vector2.new(10, 10),
+                    Velocity = Vector2.new(12, 12),
                     Size = UDim2.fromScale(2, 2),
                     AnchorPoint = Vector2.new(0.5, 0.5),
                     Image = "rbxassetid://13675238492"

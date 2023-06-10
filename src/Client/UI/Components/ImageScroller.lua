@@ -33,7 +33,7 @@ local function ImageScroller(props: table)
 
     Update()
 
-    local updateConnection = RunService.RenderStepped:Connect(Update)
+    local updateConnection = perFrameEvent:Connect(Update)
     local imageLabel = New "ImageLabel" {
         Name = "ImageScroller",
         BackgroundTransparency = 1,
