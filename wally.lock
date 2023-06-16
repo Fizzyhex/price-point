@@ -3,9 +3,14 @@
 registry = "test"
 
 [[package]]
+name = "bubshayz/stringutil"
+version = "1.0.0"
+dependencies = []
+
+[[package]]
 name = "do-not-publish/price-point"
 version = "0.1.0"
-dependencies = [["Baseline", "fizzyhex/baseline@0.2.2"], ["Component", "sleitnick/component@2.4.6"], ["Fusion", "elttob/fusion@0.2.0"], ["Observers", "sleitnick/observers@0.3.2"], ["Promise", "evaera/promise@4.0.0"], ["Red", "uncontained0/red@1.2.2"], ["Signal", "sleitnick/signal@1.5.0"], ["TableUtil", "sleitnick/table-util@1.2.0"], ["Trove", "sleitnick/trove@0.5.0"]]
+dependencies = [["Baseline", "fizzyhex/baseline@0.2.2"], ["Component", "sleitnick/component@2.4.6"], ["Fusion", "elttob/fusion@0.2.0"], ["Observers", "sleitnick/observers@0.3.2"], ["Promise", "evaera/promise@4.0.0"], ["Red", "uncontained0/red@1.2.2"], ["Signal", "sleitnick/signal@1.5.0"], ["StringUtil", "bubshayz/stringutil@1.0.0"], ["TableUtil", "sleitnick/table-util@1.2.0"], ["Trove", "sleitnick/trove@0.5.0"]]
 
 [[package]]
 name = "elttob/fusion"

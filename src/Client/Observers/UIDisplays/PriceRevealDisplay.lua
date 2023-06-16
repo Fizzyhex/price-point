@@ -42,9 +42,10 @@ local function PriceRevealDisplay()
 
             reveal = New "Sound" {
                 Name = "Reveal",
-                SoundId = "rbxassetid://13611346553",
+                SoundId = "rbxassetid://6177000613",
                 RollOffMinDistance = 500,
-                Volume = 3,
+                PlaybackSpeed = RANDOM:NextNumber(1, 1.15),
+                Volume = 0.5,
                 SoundGroup = SoundUtil.FindSoundGroup("SFX")
             },
 
@@ -66,10 +67,17 @@ local function PriceRevealDisplay()
             local textColor = Value(ThemeProvider:GetColor("header"):get())
             local textColorSpring = Spring(textColor, 10)
             local displayRevealPrice = Value(false)
+            local isFlashPlayed = false
             local revealPriceSpring = Spring(Computed(function()
                 return if displayRevealPrice:get() then revealPrice:get() else 0
             end), 5)
             local lastPriceAnimationDisplay
+
+            if revealPrice:get() == 0 then
+                revealPriceSpring:setPosition(1000)
+            else
+                revealPriceSpring:setPosition(0)
+            end
 
             if animationPromise then
                 animationPromise:cancel()
@@ -106,15 +114,18 @@ local function PriceRevealDisplay()
                                         if lastPriceAnimationDisplay ~= value then
                                             if value == revealPrice:get() then
                                                 task.delay(0.8, function()
-                                                    local sfx = if value == 0 then sounds.itsFree else sounds.reveal
-                                                    sfx:Play()
-                                                    flashTransparency:addVelocity(-20)
+                                                    if not isFlashPlayed then
+                                                        isFlashPlayed = true
+                                                        local sfx = if value == 0 then sounds.itsFree else sounds.reveal
+                                                        sfx:Play()
+                                                        flashTransparency:addVelocity(-20)
+                                                    end
                                                 end)
                                             end
                                         end
 
                                         lastPriceAnimationDisplay = value
-                                        return `R${math.ceil(revealPriceSpring:get())}`
+                                        return `R${value}`
                                     else
                                         return text:get()
                                     end

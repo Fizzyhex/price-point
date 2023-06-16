@@ -15,24 +15,24 @@ local function Podium()
             local spotIndex = tonumber(child.Name)
 
             if spotIndex and child:IsA("BasePart") then
-                table.insert(podiumSpots, child)
+                podiumSpots[spotIndex] = child
             end
         end
 
         local function EnablePodiumSpot(spot: BasePart)
             spot:SetAttribute("Enabled", true)
-            spot.LocalTransparencyModifier = 0
+            spot.Transparency = 0
             spot:FindFirstChildWhichIsA("SurfaceGui").Enabled = true
         end
 
         local function DisablePodiumSpot(spot: BasePart)
             spot:SetAttribute("Enabled", false)
-            spot.LocalTransparencyModifier = 1
+            spot.Transparency = 1
             spot:FindFirstChildWhichIsA("SurfaceGui").Enabled = false
         end
 
         local function UpdatePodiumSpots()
-            local playerCount = #Players:GetPlayers()
+            local playerCount = 1--#Players:GetPlayers()
 
             if playerCount >= 5 then
                 for _, spot in podiumSpots do

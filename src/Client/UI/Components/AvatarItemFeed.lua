@@ -1,3 +1,4 @@
+local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local AvatarEditorService = game:GetService("AvatarEditorService")
 
@@ -13,64 +14,112 @@ local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 local Label = require(ReplicatedStorage.Client.UI.Components.Label)
 local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.ShorthandPadding)
 local Nest = require(ReplicatedStorage.Client.UI.Components.Nest)
+local Unwrap = require(ReplicatedStorage.Client.UI.Util.Unwrap)
+local ThemeProvider = require(ReplicatedStorage.Client.UI.Util.ThemeProvider)
 local Children = Fusion.Children
 local ForPairs = Fusion.ForPairs
+local ForValues = Fusion.ForValues
 local Value = Fusion.Value
 local Observer = Fusion.Observer
 local Cleanup = Fusion.Cleanup
+local New = Fusion.New
 local Computed = Fusion.Computed
+
+local SUPPORTED_ITEM_TYPES = {
+    Enum.AvatarItemType.Asset,
+    Enum.AvatarItemType.Bundle
+}
+
+local function ProductTypeFilter(products, supportedType: Enum.AvatarItemType)
+    return ForValues(products, function(product)
+        local avatarItemType = product.type
+
+        if supportedType == avatarItemType then
+            return product
+        else
+            return nil
+        end
+
+    end, Fusion.doNothing)
+end
+
+local function ProductDetailsCache(products, avatarItemType: Enum.AvatarItemType)
+    local cache = Value({})
+
+    local function IsInCache(product)
+        for _, item in cache:get() do
+            if tostring(item.id) == tostring(product.id) then
+                return true
+            end
+        end
+
+        return false
+    end
+
+    local function PruneCache()
+        local currentProducts = products:get()
+        local newCache = cache:get()
+
+        for index, itemDetails in cache:get() do
+            local isRedundant = true
+
+            for _, product in currentProducts do
+                if tostring(product.Id) == tostring(itemDetails.Id) then
+                    isRedundant = false
+                    break
+                end
+            end
+
+            if isRedundant then
+                table.remove(newCache, index)
+            end
+        end
+
+        cache:set(newCache)
+    end
+
+    local function UpdateCache()
+        local payload = {}
+
+        for _, product in Unwrap(products) do
+            if not IsInCache(product) then
+                table.insert(payload, product.id)
+            end
+        end
+
+        if #payload == 0 then
+            return
+        end
+
+        local itemDetailsBatch = AvatarEditorService:GetBatchItemDetails(payload, avatarItemType)
+
+        for index, itemDetails in itemDetailsBatch do
+            itemDetails.InjectedType = avatarItemType
+            itemDetails.Id = itemDetails.Id or payload[index]
+        end
+
+        PruneCache()
+        cache:set(TableUtil.Extend(cache:get(), itemDetailsBatch))
+    end
+
+    task.spawn(UpdateCache)
+    local DestroyObserver = Observer(products):onChange(UpdateCache)
+    return cache, DestroyObserver
+end
 
 local function AvatarItemFeed(props)
     local products = props.Products
-    local avatarItemArray = Value({})
     local equipCallback = props.EquipCallback
     local unequipCallback = props.UnequipCallback
-    local itemDetailsValue = Computed(function()
-        local data = {}
+    local itemDetailsDict = {}
+    local cleanupFns = {}
 
-        ForPairs(avatarItemArray:get(), function(avatarItemType, itemDetailsArray)
-            data = TableUtil.Extend(data, itemDetailsArray)
-            return avatarItemType, itemDetailsArray
-        end)
-
-        return data
-    end)
-
-    local function UpdateItemData()
-        local newState = table.clone(avatarItemArray:get())
-        local toFetch: {[Enum.AvatarItemType]: {number}} = {}
-
-        for _, product in products:get() do
-            if not newState[product.type] then
-                newState[product.type] = {}
-            end
-
-            if not newState[product.type][product.id] then
-                toFetch[product.type] = toFetch[product.type] or {}
-                table.insert(toFetch[product.type], product.id)
-            end
-        end
-
-        for avatarItemType, itemIds in toFetch do
-            if #itemIds == 1 then
-                local id = itemIds[1]
-                local itemDetails = AvatarEditorService:GetItemDetails(id, avatarItemType)
-                itemDetails.InjectedType = avatarItemType
-                newState[avatarItemType][id] = itemDetails
-            elseif #itemIds > 1 then
-                local itemDetailsArray = AvatarEditorService:GetBatchItemDetails(itemIds, avatarItemType)
-
-                for _, itemDetails in itemDetailsArray do
-                    itemDetails.InjectedType = avatarItemType
-                    newState[avatarItemType][itemDetails.Id] = itemDetails
-                end
-            end
-        end
-
-        avatarItemArray:set(newState)
+    for _, itemType in SUPPORTED_ITEM_TYPES do
+        local productsOfItemType = ProductTypeFilter(products, itemType)
+        local itemDetails, CleanupCache = ProductDetailsCache(productsOfItemType, itemType)
+        itemDetailsDict[itemType] = itemDetails
+        table.insert(cleanupFns, CleanupCache)
     end
-
-    task.spawn(UpdateItemData)
 
     return Background {
         Name = "AvatarItemFeedDisplay",
@@ -78,28 +127,58 @@ local function AvatarItemFeed(props)
         Position = props.Position,
         AnchorPoint = props.AnchorPoint,
         Parent = props.Parent,
+        BackgroundColor3 = Color3.new(1, 1, 1),
 
-        [Cleanup] = { Observer(products):onChange(UpdateItemData) },
-
+        [Cleanup] = cleanupFns,
         [Children] = {
-            Header {
-                Text = "Product Feed",
-                Size = UDim2.new(1, 0, 0, 50)
+            -- Header {
+            --     Text = "Product Feed",
+            --     Size = UDim2.new(1, 0, 0, 50)
+            -- },
+
+            New "UIGradient" {
+                Color = Computed(function()
+                    local accentColor = ThemeProvider:GetColor("accent"):get()
+                    local backgroundColor = ThemeProvider:GetColor("background"):get()
+                    return ColorSequence.new(backgroundColor, accentColor:Lerp(backgroundColor, 0.8))
+                end),
+                Rotation = 90
             },
 
             ScrollFrame {
                 Size = UDim2.new(1, 0, 1, -112),
                 AutomaticCanvasSize = Enum.AutomaticSize.Y,
+                BackgroundTransparency = 1,
                 CanvasSize = UDim2.fromScale(0, 0),
 
                 [Children] = {
-                    ForPairs(itemDetailsValue, function(index, itemDetails: table)
+                    ForPairs(products, function(index, product)
+                        local detailsCache = itemDetailsDict[product.type]
+                        local id = product.id
+                        local itemDetails
+
+                        if not detailsCache then
+                            return index, nil
+                        end
+
+                        for _, data in detailsCache:get() do
+                            if data.Id == id then
+                                itemDetails = data
+                                break
+                            end
+                        end
+
+                        if not itemDetails then
+                            return index, nil
+                        end
+
                         return index, AvatarItemCard {
-                            LayoutOrder = index,
+                            LayoutOrder = -index,
                             Id = itemDetails.Id,
                             AvatarItemType = itemDetails.InjectedType,
                             ItemDetails = itemDetails,
                             Size = UDim2.new(1, 0, 0, 100),
+                            BackgroundTransparency = 0.5,
                             EquipCallback = equipCallback,
                             UnequipCallback = unequipCallback
                         }
@@ -111,22 +190,18 @@ local function AvatarItemFeed(props)
             },
 
             Nest {
-                Size = UDim2.fromScale(1, 0),
-
                 [Children] = {
                     Label {
-                        Text = "♥ i get a 40% commission on any items you buy through the game.",
+                        Text = "♥ i get a 40% commission on any items bought through the game.",
                         TextWrapped = true,
-                        Position = UDim2.fromScale(0.5, 0),
-                        AnchorPoint = Vector2.new(0.5, 0),
-                        Size = UDim2.new(1, 0, 0, 50)
+                        Position = UDim2.fromScale(0.5, 1),
+                        AnchorPoint = Vector2.new(0.5, 1),
+                        Size = UDim2.new(1, 0, 0, 0)
                     },
 
                     ShorthandPadding { Padding = UDim.new(0, 12) },
                 }
             },
-
-            VerticalListLayout { HorizontalAlignment = Enum.HorizontalAlignment.Center }
         }
     }
 end

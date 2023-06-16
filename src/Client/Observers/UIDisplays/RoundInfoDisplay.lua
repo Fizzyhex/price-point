@@ -17,6 +17,7 @@ local Timer = require(ReplicatedStorage.Client.UI.Components.Timer)
 local Label = require(ReplicatedStorage.Client.UI.Components.Label)
 local Unwrap = require(ReplicatedStorage.Client.UI.Util.Unwrap)
 local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.ShorthandPadding)
+local MatchStateContainer = require(ReplicatedStorage.Client.StateContainers.MatchStateContainer)
 
 local gameRules = ReplicatedStorage.Assets.Configuration.GameRules
 
@@ -36,6 +37,7 @@ local function RoundInfoDisplay()
     local roundTimerStart = Value(0)
     local timeRemaining = Value(0)
     local roundsRemaining = Value(nil)
+    local mode = Value(nil)
 
     local timerConnection = RunService.Heartbeat:Connect(function()
         local currentRoundTimerStart = roundTimerStart:get()
@@ -57,6 +59,7 @@ local function RoundInfoDisplay()
     RoundStateContainer.FusionUtil.StateHook(RoundStateContainer, roundTimerStart, "roundTimer")
     RoundStateContainer.FusionUtil.StateHook(RoundStateContainer, roundTimerDuration, "roundDuration")
     RoundStateContainer.FusionUtil.StateHook(RoundStateContainer, roundsRemaining, "roundsRemaining")
+    MatchStateContainer.FusionUtil.StateHook(MatchStateContainer, mode, "mode")
 
     return Observers.observeTag("RoundInfoDisplay", function(parent: Instance)
         local ui = Background {
@@ -84,8 +87,6 @@ local function RoundInfoDisplay()
                 },
 
                 Label {
-                    TextScaled = true,
-
                     Text = Computed(function()
                         if not roundsRemaining:get() then
                             return ""
@@ -98,6 +99,19 @@ local function RoundInfoDisplay()
                         Visible = Computed(function()
                             local value = roundsRemaining:get()
                             return value ~= nil
+                        end)
+                    }
+                },
+
+                Label {
+                    Text = Computed(function()
+                        print(script, "mode=", mode:get())
+                        return if mode:get() then mode:get() else ""
+                    end),
+
+                    [Children] = ScaleOut {
+                        Visible = Computed(function()
+                            return mode:get() ~= nil
                         end)
                     }
                 }

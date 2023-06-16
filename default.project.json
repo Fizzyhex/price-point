@@ -20,6 +20,10 @@
     "ServerStorage": {
       "Server": {
         "$path": "src/Server"
+      },
+
+      "ScrapeExports": {
+        "$path": "ScrapeExports"
       }
     },
 

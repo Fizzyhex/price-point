@@ -48,7 +48,7 @@ local function RewardPoints(system)
     return Promise.new(function(resolve)
         local finalGuesses = system:GetGuesses()
         local scoreStateContainer = system:GetScoreStateContainer()
-        local price = system:GetCurrentProduct().PriceInRobux
+        local price = system:GetCurrentProduct().PriceInRobux or 0
         local waitTime = 0.5
         local playbackSpeed = 1
         logger.print("Old scores:", scoreStateContainer:GetAll())

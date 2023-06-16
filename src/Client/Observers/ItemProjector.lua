@@ -4,7 +4,7 @@ local TweenService = game:GetService("TweenService")
 
 local Observers = require(ReplicatedStorage.Packages.Observers)
 local Bin = require(ReplicatedStorage.Packages.Red).Bin
-local PivotTweener = require(ReplicatedStorage.Shared.PivotTweener)
+local CustomTweener = require(ReplicatedStorage.Shared.CustomTweener)
 
 local deletionEffect = ReplicatedStorage.Assets.ParticleEffects.Deletion
 
@@ -22,6 +22,33 @@ local function DoDeletionEffect(parts: {BasePart})
     end)
 end
 
+local function HasPart(model: Model)
+    for _, descendant in model:GetDescendants() do
+        if descendant:IsA("BasePart") then
+            return true
+        end
+    end
+
+    return false
+end
+
+local function YieldForPart(model, timeout)
+    local isChildAdded = true
+    local start = tick()
+    local childConnection = model.DescendantAdded:Connect(function(descendant)
+        if descendant:IsA("BasePart") then
+            isChildAdded = true
+        end
+    end)
+
+    while isChildAdded == false and tick() - start < timeout do
+        task.wait()
+    end
+
+    childConnection:Disconnect()
+    return isChildAdded
+end
+
 local ANCESTORS = { workspace }
 
 local function ItemProjector()
@@ -34,19 +61,32 @@ local function ItemProjector()
         local root: BasePart = instance:WaitForChild("Root")
 
         binAdd(container.ChildAdded:Connect(function(child: Model | BasePart)
+            if not HasPart(child) then
+                YieldForPart(child, 3)
+            end
+
             local goalPivot = instance:GetPivot()
             local startPivot = goalPivot - Vector3.new(0, root.Size.Y, 0)
-            local pivotTweener = PivotTweener(child)
+
+            local customTweener = CustomTweener(child, function(cframe: CFrame)
+                if child.PrimaryPart then
+                    child:SetPrimaryPartCFrame(cframe)
+                else
+                    child:PivotTo(cframe)
+                end
+            end)
+
             local tween = TweenService:Create(
-                pivotTweener,
+                customTweener,
                 TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
                 { Value = goalPivot }
             )
-            pivotTweener.Value = startPivot
+
+            customTweener.Value = startPivot
             child:PivotTo(startPivot)
             tween:Play()
             tween.Completed:Wait()
-            pivotTweener:Destroy()
+            customTweener:Destroy()
         end))
 
         binAdd(container.ChildRemoved:Connect(function(child: Instance)

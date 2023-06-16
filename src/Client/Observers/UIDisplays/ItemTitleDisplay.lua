@@ -122,7 +122,7 @@ local function ItemTitleDisplay()
                                 return "A new game will start shortly."
                             end
                         elseif phase == "GameOver" then
-                            return "Thanks for playing!"
+                            return "gg"
                         else
                             return currentProductInfo:get() or ""
                         end

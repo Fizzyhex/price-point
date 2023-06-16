@@ -4,8 +4,8 @@ local ServerStorage = game:GetService("ServerStorage")
 local Promise = require(ReplicatedStorage.Packages.Promise)
 local CreateLogger = require(ReplicatedStorage.Shared.CreateLogger)
 
-local ServerItemProjector = require(ServerStorage.Server.Components.ServerItemProjector)
 local MarketplacePreviewUtil = require(ServerStorage.Server.Util.MarketplacePreviewUtil)
+local ItemModelChannel = require(ServerStorage.Server.EventChannels.ItemModelChannel)
 
 local logger = CreateLogger(script)
 
@@ -36,10 +36,7 @@ local function PriceGuessing(system)
         local imageUri =
             if productData.BundleType then `rbxthumb://type=BundleThumbnail&id={id}&w=420&h=420`
             else `rbxthumb://type=Asset&id={id}&w=420&h=420`
-
-        for _, component in ServerItemProjector:GetAll() do
-            component:SetModel(nil)
-        end
+        ItemModelChannel.RaiseItemChanged(nil)
 
         local productDataPayload = {
             image = imageUri,
@@ -69,9 +66,7 @@ local function PriceGuessing(system)
                 else nil
 
             if preview then
-                for _, component in ServerItemProjector:GetAll() do
-                    component:SetModel(preview:Clone())
-                end
+                ItemModelChannel.RaiseItemChanged(preview, assetType)
             end
         end)
 

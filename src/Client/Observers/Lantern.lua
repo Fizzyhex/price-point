@@ -8,6 +8,7 @@ local function Lantern()
         local bulb: BasePart = lantern:WaitForChild("Bulb")
         local light: PointLight = bulb:WaitForChild("PointLight")
         local originalBulbColor = bulb.Color
+        light.Shadows = lantern:GetAttribute("CastShadows") == true
 
         local function EnableLantern()
             light.Enabled = true
@@ -20,7 +21,7 @@ local function Lantern()
         end
 
         local stopObservingTime = Observers.observeProperty(Lighting, "ClockTime", function(clockTime: number)
-            if clockTime >= 17.8 or clockTime <= 6.3 then
+            if lantern:GetAttribute("AlwaysOn") or clockTime >= 17.8 or clockTime <= 6.3 then
                 EnableLantern()
             else
                 DisableLantern()

@@ -19,6 +19,7 @@ local TEXT_PADDING = UDim.new(0, 12)
 local function Button(props)
     local isHeld = props.IsHeld
 
+    local clickSound: Sound
     local textButton = New "TextButton" {
         AutoButtonColor = true,
         FontFace = props.Font or ThemeProvider:GetFontFace("body"),
@@ -30,6 +31,8 @@ local function Button(props)
         AutomaticSize = props.AutomaticSize or Enum.AutomaticSize.XY,
 
         [OnEvent "MouseButton1Click"] = function()
+            clickSound:Play()
+
             if props.OnClick then
                 props.OnClick()
             end
@@ -42,6 +45,11 @@ local function Button(props)
 
             ShorthandPadding {
                 Padding = TEXT_PADDING
+            },
+
+            New "UIGradient" {
+                Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.new(0.8, 0.8, 0.8)),
+                Rotation = 90
             },
 
             New "ImageLabel" {
@@ -58,11 +66,19 @@ local function Button(props)
                     return if Unwrap(isHeld) then 0.5 else 1
                 end),
 
-                [Children] = New "UICorner" {
-                    CornerRadius = UDim.new(0, 12)
-                },
+                [Children] = {
+                    New "UICorner" {
+                        CornerRadius = UDim.new(0, 12)
+                    },
+                }
             }
         },
+    }
+
+    clickSound = New "Sound" {
+        Name = "ClickSound",
+        SoundId = "rbxassetid://6042053626",
+        Parent = textButton
     }
 
     return Hydrate(textButton)(StripProps(props, STRIPPED_PROPS))

@@ -3,11 +3,12 @@ local ServerStorage = game:GetService("ServerStorage")
 
 local Component = require(ReplicatedStorage.Packages.Component)
 local Trove = require(ReplicatedStorage.Packages.Trove)
+local ItemModelChannel = require(ServerStorage.Server.EventChannels.ItemModelChannel)
 
 local mannequinIdle = ServerStorage.Assets.Animations.MannequinIdle
 
 local function GetLargestScalar(vector: Vector3)
-    return math.max(math.max(vector.X,   vector.Y), vector.Z)
+    return math.max(math.max(vector.X, vector.Y), vector.Z)
 end
 
 local function PartToModel(part: BasePart): Model
@@ -83,19 +84,19 @@ local function SetModelScale(model: Model, scale: number)
     local largestScalar = GetLargestScalar(extentsSize)
     local scaleBy = scale / largestScalar
 
-    local humanoid = model:FindFirstChildWhichIsA("Humanoid")
+    -- local humanoid = model:FindFirstChildWhichIsA("Humanoid")
 
-    if humanoid and (humanoid.RigType == Enum.RigType.R15 or model:FindFirstChild("LowerTorso")) then
-        local rootPart = humanoid.RootPart
+    -- if humanoid and (humanoid.RigType == Enum.RigType.R15 or model:FindFirstChild("LowerTorso")) then
+    --     local rootPart = humanoid.RootPart
 
-        if rootPart then
-            print("Scaling humanoid")
-            ScaleHumanoid(humanoid, scaleBy)
-            return
-        end
-    end
+    --     if rootPart then
+    --         print("Scaling humanoid")
+    --         ScaleHumanoid(humanoid, scaleBy)
+    --         return
+    --     end
+    -- end
 
-    ResizeModel(model, scaleBy)
+    model:ScaleTo(scaleBy)
 end
 
 local ServerItemProjector = Component.new { Tag = "ItemProjector" }
@@ -106,6 +107,7 @@ function ServerItemProjector:Construct()
         self.Instance:FindFirstChild("Root"),
         "The ItemProjector component requires a BasePart named Root parented underneath the Instance"
     )
+    self._root.Transparency = 1
 
     if self.Instance:FindFirstChild("Container") then
         self._container = self.Instance.Container
@@ -115,6 +117,10 @@ function ServerItemProjector:Construct()
         self._container.Parent = self.Instance
         self._trove:Add(self._container)
     end
+
+    self._trove:Add(ItemModelChannel.ObserveItemChanged(function(item)
+        self:SetModel(item)
+    end))
 end
 
 function ServerItemProjector:_DestroyCurrentModel()
@@ -156,11 +162,13 @@ function ServerItemProjector:SetModel(projection: BasePart | Model, humanoidDesc
     projection:PivotTo(self._root:GetPivot())
     --[!] We need to parent characters before we can mess with humanoid descriptions
     projection.Parent = self._container
-    SetModelScale(projection, GetLargestScalar(self._root.Size))
+    --SetModelScale(projection, GetLargestScalar(self._root.Size))
 
     if projection:FindFirstChildWhichIsA("Humanoid") then
         self:_HandleProjectionCharacter(projection)
     end
+
+    SetModelScale(projection, GetLargestScalar(self._root.Size))
 
     local animation = projection:FindFirstChildWhichIsA("Animation")
 

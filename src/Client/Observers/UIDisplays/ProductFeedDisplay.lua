@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local AvatarEditorService = game:GetService("AvatarEditorService")
+local RunService = game:GetService("RunService")
 
 local Observers = require(ReplicatedStorage.Packages.Observers)
 
@@ -19,6 +20,8 @@ local ANCESTORS = { workspace }
 local TAG = "ProductFeedDisplay"
 local LOCAL_PLAYER = Players.LocalPlayer
 local USE_RED_HACK = true
+local ADD_TEST_ITEMS = RunService:IsStudio()
+local MAX_PRODUCTS = 100
 
 local function ProductFeedDisplay()
     local products = Value({})
@@ -29,24 +32,30 @@ local function ProductFeedDisplay()
         local newProductData = {}
 
         for _, productData in newState do
-            local isOld = false
+            local isNew = true
 
             for _, product in currentProductData do
                 if product.id == productData.id then
-                    isOld = true
+                    isNew = false
                     break
                 end
             end
 
-            if isOld then
-                continue
+            if isNew then
+                table.insert(newProductData, productData)
             end
-
-            table.insert(newProductData, productData)
         end
 
         if #newProductData > 0 then
-            products:set(TableUtil.Extend(currentProductData, newProductData))
+            local data = TableUtil.Extend(currentProductData, newProductData)
+
+            if MAX_PRODUCTS > 0 then
+                while #data > MAX_PRODUCTS do
+                    table.remove(data, 1)
+                end
+            end
+
+            products:set(data)
         end
     end)
 
@@ -122,15 +131,19 @@ local function ProductFeedDisplay()
         end)
     end
 
-    ProductFeedStateContainer:Patch({
-        [1] = {id = 9490601996, type = Enum.AvatarItemType.Asset}
-    })
+    if ADD_TEST_ITEMS then
+        ProductFeedStateContainer:Patch({
+            [1] = {id = 9490601996, type = Enum.AvatarItemType.Asset},
+            [2] = {id = 496, type = Enum.AvatarItemType.Bundle}
+        })
+    end
 
     Observers.observeTag(TAG, function(target: Instance)
         local ui = Nest {
+            Parent = target,
+
             [Children] = {
                 AvatarItemFeed {
-                    Parent = target,
                     Products = products,
                     EquipCallback = EquipItem,
                     UnequipCallback = UnequipItem

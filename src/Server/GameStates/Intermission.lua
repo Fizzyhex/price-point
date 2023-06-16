@@ -6,12 +6,17 @@ local CreateLogger = require(ReplicatedStorage.Shared.CreateLogger)
 
 local logger = CreateLogger(script)
 
+local function ToTitlecase(str: string)
+    return str:sub(1, 1):upper() .. str:sub(2)
+end
+
 local function Intermission(system)
     return Promise.new(function(resolve)
         local roundStateContainer = system:GetRoundStateContainer()
         local scoreStateContainer = system:GetScoreStateContainer()
         local intermissionLength = system:GetIntermissionTime()
         roundStateContainer:Clear()
+        system:ClearMatchStateContainer()
 
         while true do
             if #system:GetActivePlayers() == 0 then
@@ -46,6 +51,14 @@ local function Intermission(system)
         end
 
         scoreStateContainer:Patch(scorePatch)
+        local matchCategories = system:PickMatchCategories()
+        local matchCategoriesTitlecase = {}
+
+        for index, category in matchCategories do
+            matchCategoriesTitlecase[index] = ToTitlecase(category)
+        end
+
+        system:SetModeName(table.concat(matchCategoriesTitlecase, " & "))
         resolve(system:GetStateByName("NextRound"))
     end)
 end

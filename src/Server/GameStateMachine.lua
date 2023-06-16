@@ -11,6 +11,7 @@ local PlayerGuessRecorder = require(ServerStorage.Server.PlayerGuessRecorder)
 local GameStates = require(ServerStorage.Server.GameStates)
 local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 local Red = require(ReplicatedStorage.Packages.Red)
+local BasicStateContainer = require(ReplicatedStorage.Shared.BasicStateContainer)
 
 local gameRules = ReplicatedStorage.Assets.Configuration.GameRules
 local logger = CreateLogger(script)
@@ -111,22 +112,28 @@ function GameStateMachine:GetGuesses()
     return self._guesses
 end
 
+function GameStateMachine:SetModeName(mode)
+    self._matchStateContainer:Patch({
+        mode = if mode then mode else self._matchStateContainer.NONE
+    })
+end
+
 function GameStateMachine:PickNextProduct()
     if self._currentProduct then
-        local currentProducts = self._ProductFeedStateContainer:GetAll()
+        local currentProductFeed = self._productFeedStateContainer:GetAll()
 
-        if #currentProducts > 10 then
-            table.remove(currentProducts, 1)
+        if #currentProductFeed > 10 then
+            table.remove(currentProductFeed, 1)
         end
 
-        table.insert(currentProducts, 1, {
+        table.insert(currentProductFeed, 1, {
             id = self._currentProduct.Id or self._currentProduct.AssetId,
             type = if self._currentProduct.BundleType then Enum.AvatarItemType.Bundle else Enum.AvatarItemType.Asset
         })
-        self._ProductFeedStateContainer:Patch(currentProducts)
+        self._productFeedStateContainer:Patch(currentProductFeed)
     end
 
-    local product = self:_GetRandomProduct()
+    local product = self:_GetRandomProduct(self:GetMatchCategories())
     self._currentProduct = product
 
     return product
@@ -147,8 +154,11 @@ function GameStateMachine:GetActivePlayers()
     return Players:GetPlayers()
 end
 
-function GameStateMachine:_GetRandomProduct()
-    local categories = TableUtil.Keys(self._productPools)
+function GameStateMachine:_GetRandomProduct(categories: table?)
+    if not categories then
+        categories = TableUtil.Keys(self._productPools)
+    end
+
     local randomCategory = categories[RANDOM:NextInteger(1, #categories)]
     local productData = self._productPools[randomCategory]:Pop()
     local infoType = if productData.itemType == "Bundle" then Enum.InfoType.Bundle else Enum.InfoType.Asset
@@ -158,14 +168,25 @@ function GameStateMachine:_GetRandomProduct()
     end)
 
     if not ok then
-        logger.warn(`Failed to fetch marketplace info for {productData.id}: {marketplaceInfo}`)
+        logger.warn(`Failed to fetch marketplace info for {productData.id}: {marketplaceInfo}, trying again shortly`)
         task.wait(0.5)
-        return self:_GetRandomProduct()
+        return self:_GetRandomProduct(categories)
     end
 
     -- Use the cached price if it's not provided within the MarketplaceInfo (e.g for bundles) (why)
     marketplaceInfo.PriceInRobux = marketplaceInfo.PriceInRobux or productData.price
     return marketplaceInfo
+end
+
+function GameStateMachine:PickMatchCategories()
+    local categories = TableUtil.Sample(TableUtil.Keys(self._productPools), 2)
+    self._matchCategories = categories
+    logger.print("Picked categories:", categories)
+    return table.clone(categories)
+end
+
+function GameStateMachine:GetMatchCategories()
+    return self._matchCategories
 end
 
 function GameStateMachine:Start(endCallback)
@@ -204,16 +225,21 @@ function GameStateMachine:SetItemDisplay(value: Instance | nil)
     self._itemDisplaySetter.Value = value
 end
 
+function GameStateMachine:ClearMatchStateContainer()
+    self._matchStateContainer:Clear()
+end
+
 function GameStateMachine:Destroy()
     self._itemDisplaySetter:Destroy()
 end
 
-function GameStateMachine.new(stateContainers, productPools)
+function GameStateMachine.new(stateContainers: {typeof(BasicStateContainer.new())}, productPools)
     local self = setmetatable({}, GameStateMachine)
     self._roundStateContainer = stateContainers.roundStateContainer
     self._scoreStateContainer = stateContainers.scoreStateContainer
     self._guessStateContainer = stateContainers.guessStateContainer
-    self._ProductFeedStateContainer = stateContainers.ProductFeedStateContainer
+    self._productFeedStateContainer = stateContainers.productFeedStateContainer
+    self._matchStateContainer = stateContainers.matchStateContainer
     self._productPools = productPools
     self._roundsRemaining = assert(gameRules:GetAttribute("rounds"), "'rounds' game rule is not set")
     self._guesses = {}

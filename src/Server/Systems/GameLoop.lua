@@ -13,9 +13,10 @@ local logger = CreateLogger(script)
 
 local STATE_CONTAINER_NAMESPACES = {
     roundStateContainer = NetworkNamespaces.ROUND_STATE_CONTAINER,
-    ProductFeedStateContainer = NetworkNamespaces.PRODUCT_FEED_STATE_CONTAINER,
+    productFeedStateContainer = NetworkNamespaces.PRODUCT_FEED_STATE_CONTAINER,
     scoreStateContainer = NetworkNamespaces.SCORE_STATE_CONTAINER,
-    guessStateContainer = NetworkNamespaces.GUESS_STATE_CONTAINER
+    guessStateContainer = NetworkNamespaces.GUESS_STATE_CONTAINER,
+    matchStateContainer = NetworkNamespaces.MATCH_STATE_CONTAINER
 }
 
 local USE_TEST_PRODUCTS = false
@@ -48,9 +49,16 @@ local TEST_PRODUCTS = {
     --     price = 0
     -- },
 
+    -- {
+    --     -- I feel Bricky 2 (pants)
+    --     id = 23571257,
+    --     itemType = "Asset",
+    --     price = 50
+    -- },
+
     {
-        -- I feel Bricky 2 (pants)
-        id = 23571257,
+        -- Bloxy Cola
+        id = 10472779,
         itemType = "Asset",
         price = 50
     }

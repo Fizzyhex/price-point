@@ -12,7 +12,7 @@ local Value = Fusion.Value
 local Observer = Fusion.Observer
 local Hydrate = Fusion.Hydrate
 
-local DEFAULT_ANIMATION_SPEED = 0.5
+local DEFAULT_ANIMATION_SPEED = 0.8
 
 local sleep = Promise.promisify(task.wait)
 

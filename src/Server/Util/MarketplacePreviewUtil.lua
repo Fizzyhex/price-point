@@ -4,8 +4,9 @@ local Players = game:GetService("Players")
 local ServerStorage = game:GetService("ServerStorage")
 local InsertService = game:GetService("InsertService")
 local AssetService = game:GetService("AssetService")
-local CachedInsertService = require(ServerStorage.Server.CachedInsertService)
 
+local CachedInsertService = require(ServerStorage.Server.CachedInsertService)
+local ModelUtil = require(ServerStorage.Server.Util.ModelUtil)
 local catalogModels = ServerStorage.Assets.CatalogModels
 
 local function RecursivelyAnchor(subject: Instance)
@@ -169,7 +170,6 @@ function MarketplacePreviewUtil.CreateBundlePreview(bundleDetails): Model
 end
 
 function MarketplacePreviewUtil.CreateAssetPreview(asset: Instance)
-    RecursivelyAnchor(asset)
     RecursivelyDisableScripts(asset)
 
     if asset:IsA("Decal") or asset:IsA("Texture") then
@@ -200,14 +200,19 @@ function MarketplacePreviewUtil.CreateAssetPreview(asset: Instance)
         return tshirtDisplay
     end
 
-    if asset:IsA("Accessory") or asset:IsA("Tool") then
+    if asset:IsA("Tool") then
         local model = Instance.new("Model")
         model.Name = asset.Name
 
         for _, child in asset:GetChildren() do
             child.Parent = model
+
+            if child:IsA("BasePart") and child.Name == "Handle" then
+                model.PrimaryPart = child
+            end
         end
 
+        RecursivelyAnchor(model)
         return model
     end
 

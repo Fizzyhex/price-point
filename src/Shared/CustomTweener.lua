@@ -1,11 +1,11 @@
-local function PivotTweener(instance: Instance)
+local function CustomTweener(instance: Instance, fn)
     local tweener = Instance.new("CFrameValue")
 
     tweener:GetPropertyChangedSignal("Value"):Connect(function()
-        instance:PivotTo(tweener.Value)
+        fn(tweener.Value)
     end)
 
     return tweener
 end
 
-return PivotTweener
+return CustomTweener

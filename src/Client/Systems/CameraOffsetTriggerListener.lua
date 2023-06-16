@@ -7,7 +7,7 @@ local CreateLogger = require(ReplicatedStorage.Shared.CreateLogger)
 
 local LOCAL_PLAYER = Players.LocalPlayer
 local STAGE_CAMERA_OFFSET = Vector3.new(0, 2, 0)
-local TWEEN_INFO = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0)
+local TWEEN_INFO = TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 0)
 
 -- Shifts the player's camera up when entered.
 local function CameraOffsetTriggerListener()

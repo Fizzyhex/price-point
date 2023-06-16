@@ -10,6 +10,7 @@ local Children = Fusion.Children
 local Value = Fusion.Value
 local Computed = Fusion.Computed
 local OnEvent = Fusion.OnEvent
+local Cleanup = Fusion.Cleanup
 
 local Background = require(ReplicatedStorage.Client.UI.Components.Background)
 local StripProps = require(ReplicatedStorage.Client.UI.Util.StripProps)
@@ -38,8 +39,10 @@ local function AvatarItemCard(props)
     local avatarItemType = props.AvatarItemType
     local itemDetails = Value(Unwrap(props.ItemDetails))
     local isEquipped = Value(false)
+    local detailsHidden = props.DetailsHidden or Value(false)
     local equipCallback = props.EquipCallback
     local unequipCallback = props.UnequipCallback
+    local cleanup = {}
 
     local isOwned = Computed(function()
         if itemDetails:get() then
@@ -110,12 +113,32 @@ local function AvatarItemCard(props)
         end
     end
 
+    local function OnPurchaseFinished(_, purchaseId: number, wasPurchased: boolean)
+        if not itemDetails:get() then
+            return
+        end
+
+        if tostring(purchaseId) == tostring(id:get()) and wasPurchased then
+            local newDetails = itemDetails:get()
+            newDetails.Owned = true
+            itemDetails:set(newDetails)
+        end
+    end
+
+    if avatarItemType == Enum.AvatarItemType.Asset then
+        MarketplaceService.PromptPurchaseFinished:Connect(OnPurchaseFinished)
+    elseif avatarItemType == Enum.AvatarItemType.Bundle then
+        MarketplaceService.PromptBundlePurchaseFinished:Connect(OnPurchaseFinished)
+    end
+
     local ui = Background {
         Name = "AvatarShopItemCard",
         AutomaticSize = Enum.AutomaticSize.None,
         Size = UDim2.fromScale(0, 0),
         -- Faces are unclear on completely black backgrounds.
         BackgroundColor3 = ThemeProvider:GetColor("background_3"),
+
+        [Cleanup] = cleanup,
 
         [Children] = {
             Nest {
@@ -130,6 +153,9 @@ local function AvatarItemCard(props)
 
                     Nest {
                         LayoutOrder = 2,
+                        Visible = Computed(function()
+                            return Unwrap(detailsHidden) ~= true
+                        end),
 
                         [Children] = {
                             Label {
@@ -162,6 +188,9 @@ local function AvatarItemCard(props)
                 BackgroundColor3 = Computed(function()
                     local color = if isOwned:get() then ThemeProvider:GetColor("primary") else ThemeProvider:GetColor("accent")
                     return Unwrap(color)
+                end),
+                Visible = Computed(function()
+                    return Unwrap(detailsHidden) ~= true
                 end),
 
                 Text = Computed(function()

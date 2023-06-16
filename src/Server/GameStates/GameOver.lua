@@ -6,6 +6,7 @@ local Promise = require(ReplicatedStorage.Packages.Promise)
 
 local CreateLogger = require(ReplicatedStorage.Shared.CreateLogger)
 local ServerItemProjector = require(ServerStorage.Server.Components.ServerItemProjector)
+local CharacterChannel = require(ServerStorage.Server.EventChannels.CharacterChannel)
 
 local logger = CreateLogger(script)
 
@@ -40,6 +41,10 @@ local function SetupPodium(orderedScores, podium)
             continue
         end
 
+        if podium:GetAttribute("Enabled") == false then
+            continue
+        end
+
         local score = orderedScores[placement] and orderedScores[placement][2]
         local statsFrame = part.SurfaceGui.Stats
 
@@ -65,26 +70,19 @@ local function TeleportOntoPodium(characters: {Instance}, podiumSpots)
     for _, character in characters do
         local spot = table.remove(podiumSpots, 1)
 
-        if not spot then
+        if spot == nil then
             break
         end
 
-        local rootPart: BasePart? = character:FindFirstChild("HumanoidRootPart")
-        local humanoid: Humanoid? = character:FindFirstChildWhichIsA("Humanoid")
-
-        if humanoid and humanoid:GetState() == Enum.HumanoidStateType.Seated then
-            humanoid.Jump = true
-        end
-
         table.insert(oldPivots, character:GetPivot())
-        rootPart:PivotTo(spot)
         table.insert(podiumCharacters, character)
+        CharacterChannel.RaiseTeleportBegun(character, spot)
     end
 
     return function()
         for index, character in podiumCharacters do
             pcall(function()
-                character:PivotTo(oldPivots[index])
+                CharacterChannel.RaiseTeleportBegun(character, oldPivots[index])
             end)
         end
     end
