@@ -12,7 +12,7 @@ local function PriceReveal(system)
 
         replicatedRoundState:Patch({
             phase = "PriceReveal",
-            price = productData.PriceInRobux,
+            price = productData.PriceInRobux or productData.Price or productData.Robux or 0,
             roundTimer = 0
         })
 

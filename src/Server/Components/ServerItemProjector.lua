@@ -11,6 +11,13 @@ local function GetLargestScalar(vector: Vector3)
     return math.max(math.max(vector.X, vector.Y), vector.Z)
 end
 
+local function GetRotationFromCamera(subject: BasePart | Model, camera: Camera)
+	local subjectCFrame = subject:GetPivot()
+	local cameraCFrame = camera.CFrame
+	local relative = subjectCFrame:ToObjectSpace(cameraCFrame)
+	return relative.Rotation
+end
+
 local function PartToModel(part: BasePart): Model
     local model = Instance.new("Model")
     model.Name = part.Name
@@ -159,17 +166,24 @@ function ServerItemProjector:SetModel(projection: BasePart | Model, humanoidDesc
         projection = PartToModel(projection)
     end
 
-    projection:PivotTo(self._root:GetPivot())
+    local thumbnailCamera: Camera = projection:FindFirstChild("ThumbnailCamera")
+
+    if thumbnailCamera and thumbnailCamera:IsA("Camera") then
+        local thumbnailCameraRotation = GetRotationFromCamera(projection, thumbnailCamera)
+        local rootPivot: CFrame = self._root:GetPivot()
+        projection:PivotTo(CFrame.new(rootPivot.Position) * thumbnailCameraRotation * rootPivot.Rotation)
+    else
+        projection:PivotTo(self._root:GetPivot())
+    end
+
     --[!] We need to parent characters before we can mess with humanoid descriptions
     projection.Parent = self._container
-    --SetModelScale(projection, GetLargestScalar(self._root.Size))
 
     if projection:FindFirstChildWhichIsA("Humanoid") then
         self:_HandleProjectionCharacter(projection)
     end
 
     SetModelScale(projection, GetLargestScalar(self._root.Size))
-
     local animation = projection:FindFirstChildWhichIsA("Animation")
 
     if animation then
