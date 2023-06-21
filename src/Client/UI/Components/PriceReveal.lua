@@ -21,7 +21,7 @@ local Cleanup = Fusion.Cleanup
 local Observer = Fusion.Observer
 
 local sleep = Promise.promisify(task.wait)
-local STRIPPED_PROPS = { "PlayEvent", "EndEvent" }
+local STRIPPED_PROPS = { "PlayEvent", "EndEvent", "OnFinalPriceRevealed" }
 local RANDOM = Random.new()
 
 local function PriceReveal(props)
@@ -32,28 +32,30 @@ local function PriceReveal(props)
     local uiPosition = Value(UDim2.fromScale(0.5, -1))
     local uiPositionSpring = Spring(uiPosition, 15)
     local onEnd = Signal.new()
+    local onFinalPriceRevealed = props.OnFinalPriceRevealed
 
     local sounds = {
         buildup = New "Sound" {
             Name = "DrumRoll",
             SoundId = "rbxassetid://13611319011",
-            RollOffMinDistance = 500,
+            RollOffMinDistance = 800,
+            Volume = 0.7,
             SoundGroup = SoundUtil.FindSoundGroup("SFX")
         },
 
         reveal = New "Sound" {
             Name = "Reveal",
             SoundId = "rbxassetid://6177000613",
-            RollOffMinDistance = 500,
+            RollOffMinDistance = 800,
             PlaybackSpeed = RANDOM:NextNumber(1, 1.15),
-            Volume = 0.5,
+            Volume = 0.6,
             SoundGroup = SoundUtil.FindSoundGroup("SFX")
         },
 
         itsFree = New "Sound" {
             Name = "ItsFree",
             SoundId = "rbxassetid://130771265",
-            RollOffMinDistance = 500,
+            RollOffMinDistance = 800,
             SoundGroup = SoundUtil.FindSoundGroup("SFX")
         }
     }
@@ -62,7 +64,7 @@ local function PriceReveal(props)
         price = Unwrap(price)
         uiPositionSpring:setPosition(UDim2.fromScale(0.5, -1))
         local isWindup = Value(true)
-        local priceSpring = Spring(Value(price), 10)
+        local priceSpring = Spring(Value(price), 5)
         local accentColor = ThemeProvider:GetColor("accent")
         local backgroundColor = ThemeProvider:GetColor("background")
         local headerColor = ThemeProvider:GetColor("header")
@@ -93,6 +95,10 @@ local function PriceReveal(props)
 
                 task.delay(0.5, function()
                     flashTransparencySpring:setPosition(0)
+
+                    if onFinalPriceRevealed then
+                        onFinalPriceRevealed:Fire()
+                    end
 
                     if price == 0 then
                         sounds.itsFree:Play()

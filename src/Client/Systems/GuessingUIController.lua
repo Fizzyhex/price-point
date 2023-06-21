@@ -20,8 +20,10 @@ local TextFilters = require(ReplicatedStorage.Client.UI.Util.TextFilters)
 local RoundStateContainer = require(ReplicatedStorage.Client.StateContainers.RoundStateContainer)
 
 local NetworkNamespaces = require(ReplicatedStorage.Shared.Constants.NetworkNamespaces)
+local SoundUtil = require(ReplicatedStorage.Shared.Util.SoundUtil)
 
 local LOCAL_PLAYER = Players.LocalPlayer
+local RANDOM = Random.new()
 local gameRules = ReplicatedStorage.Assets.Configuration.GameRules
 
 local function GuessingUIController()
@@ -35,6 +37,22 @@ local function GuessingUIController()
             if isGuessingAvailable:get() then UDim2.fromScale(0.5, 0.9)
             else UDim2.new(0.5, 0, 2, 0)
     end), 10)
+
+    local selectSounds: { Sound } = {
+        New "Sound" {
+            Name = "select_01",
+            SoundId = "rbxassetid://10128760939",
+            SoundGroup = SoundUtil.FindSoundGroup("SFX"),
+            Volume = 0.6
+        },
+
+        New "Sound" {
+            Name = "select_02",
+            SoundId = "rbxassetid://10066968815",
+            SoundGroup = SoundUtil.FindSoundGroup("SFX"),
+            Volume = 0.6
+        }
+    }
 
     local function ValidateGuess(guess: number)
         if
@@ -55,6 +73,7 @@ local function GuessingUIController()
         end
 
         local guess = tonumber(currentGuess:get())
+        selectSounds[RANDOM:NextInteger(1, #selectSounds)]:Play()
         print("Guess:", guess)
 
         if ValidateGuess(guess) then
@@ -119,6 +138,7 @@ local function GuessingUIController()
 
         [Children] = {
             currentGuessingUi,
+            selectSounds
         }
     }
 end

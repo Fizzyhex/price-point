@@ -6,6 +6,8 @@ local PropsUtil = {}
 PropsUtil.NIL = newproxy()
 
 -- Takes the old props and combines them with the new ones, overwriting any existing keys and combining children.
+--
+-- Use `PropsUtil.NIL` to replace values with nil.
 function PropsUtil.PatchProps(oldProps, newProps)
     local result = table.clone(oldProps)
 
@@ -24,5 +26,15 @@ function PropsUtil.PatchProps(oldProps, newProps)
     return result
 end
 
+-- Strips the specified props from the table.
+function PropsUtil.StripProps(props, toStrip)
+    local stripped = table.clone(props)
+
+    for _, value in toStrip do
+        stripped[value] = nil
+    end
+
+    return stripped
+end
 
 return PropsUtil

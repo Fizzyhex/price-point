@@ -13,7 +13,7 @@ local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.Shorthan
 local TextFilters = require(ReplicatedStorage.Client.UI.Util.TextFilters)
 
 return function(target: Instance)
-    local isHeld = Value(false)
+    local isActive = Value(false)
 
     local story = Nest {
         Parent = target,
@@ -43,10 +43,10 @@ return function(target: Instance)
 
             PrimaryButton {
                 Text = "Toggle Button",
-                IsHeld = isHeld,
+                IsActive = isActive,
 
                 OnClick = function()
-                    isHeld:set(not isHeld:get())
+                    isActive:set(not isActive:get())
                 end
             },
         }

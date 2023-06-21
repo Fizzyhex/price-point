@@ -11,7 +11,7 @@ local logger = CreateLogger(script)
 
 local function PercentageDistance(a, b)
     local distance = 1 - (math.abs(a - b) / math.max(a, b))
-    return if distance == distance then distance else 0
+    return if distance == distance then distance else 1
 end
 
 local function Round(x)

@@ -6,6 +6,7 @@ local GameStateChannel = {}
 
 GameStateChannel.RaisePriceRevealBegun, GameStateChannel.ObservePriceRevealBegun = CoreEvent()
 GameStateChannel.RaisePriceRevealEnded, GameStateChannel.ObservePriceRevealEnded = CoreEvent()
+GameStateChannel.RaisePriceAnimationEnded, GameStateChannel.ObservePriceAnimationEnded = CoreEvent()
 GameStateChannel.RaiseGameOver, GameStateChannel.ObserveGameOver = CoreEvent()
 GameStateChannel.RaiseRoundOver, GameStateChannel.ObserveRoundOver = CoreEvent()
 

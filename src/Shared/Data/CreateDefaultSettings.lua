@@ -30,7 +30,7 @@ local function ToggleSetting(kwargs: {
         displayName = kwargs.displayName,
         min = kwargs.min,
         max = kwargs.max,
-        value = Fusion.Value(kwargs.defaultValue or 0)
+        value = Fusion.Value(kwargs.defaultValue)
     }
 end
 
@@ -42,14 +42,14 @@ local function CreateDefaultSettings()
         displayName = "Music Volume",
         min = 0,
         max = 100,
-        defaultValue = 25
+        defaultValue = 50
     })
 
     clientSettings.Theme = ToggleSetting({
         id = "Theme",
         displayName = "Theme",
-        defaultValue = "Dark",
-        options = { Light = "Light", Dark = "Dark" }
+        defaultValue = "dark",
+        options = { light = "Light", dark = "Dark" }
     })
 
     return clientSettings

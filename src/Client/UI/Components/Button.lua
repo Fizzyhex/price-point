@@ -13,11 +13,11 @@ local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.Shorthan
 local StripProps = require(ReplicatedStorage.Client.UI.Util.StripProps)
 local Unwrap = require(ReplicatedStorage.Client.UI.Util.Unwrap)
 
-local STRIPPED_PROPS = { "OnClick", "IsHeld" }
+local STRIPPED_PROPS = { "OnClick", "IsActive" }
 local TEXT_PADDING = UDim.new(0, 12)
 
 local function Button(props)
-    local isHeld = props.IsHeld
+    local isActive = props.IsActive
 
     local clickSound: Sound
     local textButton = New "TextButton" {
@@ -63,7 +63,7 @@ local function Button(props)
                 Image = "rbxassetid://13702420539",
                 ImageColor3 = Color3.new(0, 0, 0),
                 ImageTransparency = Computed(function()
-                    return if Unwrap(isHeld) then 0.5 else 1
+                    return if Unwrap(isActive) then 0.5 else 1
                 end),
 
                 [Children] = {

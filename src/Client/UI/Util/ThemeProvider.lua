@@ -3,7 +3,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Value = Fusion.Value
 local Computed = Fusion.Computed
+local Spring = Fusion.Spring
 local ThemeConfig = require(ReplicatedStorage.Client.UI.ThemeConfig)
+local ClientSettings = require(ReplicatedStorage.Client.State.ClientSettings)
 local THEME_COLORS = ThemeConfig.THEME_COLORS
 local FONT_FACES = ThemeConfig.FONT_FACES
 local FONT_SIZES = ThemeConfig.FONT_SIZES
@@ -13,14 +15,16 @@ local currentFontFaces = {}
 local currentFontSizes = {}
 
 local ThemeProvider = {
-    _currentColorScheme = Value("dark"),
+    _currentColorScheme = ClientSettings.Theme.value,
     _currentTextScale = Value(1),
 }
 
+print("currenttheme=", ThemeProvider._currentColorScheme:get())
+
 for colorName, colorOptions in THEME_COLORS do
-    currentColors[colorName] = Computed(function()
+    currentColors[colorName] = Spring(Computed(function()
         return colorOptions[ThemeProvider._currentColorScheme:get()]
-    end)
+    end))
 end
 
 for fontName, fontFaces in FONT_FACES do

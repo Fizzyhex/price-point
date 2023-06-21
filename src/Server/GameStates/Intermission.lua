@@ -1,8 +1,10 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService("ServerStorage")
 
 local Promise = require(ReplicatedStorage.Packages.Promise)
 local CreateLogger = require(ReplicatedStorage.Shared.CreateLogger)
+local ServerGameStateChannel = require(ServerStorage.Server.EventChannels.ServerGameStateChannel)
 
 local logger = CreateLogger(script)
 
@@ -25,6 +27,8 @@ local function Intermission(system)
                 break
             end
         end
+
+        ServerGameStateChannel.RaiseIntermissionBegun()
 
         roundStateContainer:Patch({
             phase = "Intermission",

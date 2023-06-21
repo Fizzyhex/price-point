@@ -8,5 +8,6 @@ ServerGameStateChannel.RaisePriceRevealBegun, ServerGameStateChannel.ObservePric
 ServerGameStateChannel.RaisePriceRevealEnded, ServerGameStateChannel.ObservePriceRevealEnded = CoreEvent()
 ServerGameStateChannel.RaiseGameOver, ServerGameStateChannel.ObserveGameOver = CoreEvent()
 ServerGameStateChannel.RaiseRoundOver, ServerGameStateChannel.ObserveRoundOver = CoreEvent()
+ServerGameStateChannel.RaiseIntermissionBegun, ServerGameStateChannel.ObserveIntermissionBegun = CoreEvent()
 
 return ServerGameStateChannel

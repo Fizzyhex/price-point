@@ -5,7 +5,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local ItemModelChannel = require(ServerStorage.Server.EventChannels.ItemModelChannel)
 local ModelUtil = require(ServerStorage.Server.Util.ModelUtil)
 
-local BALL_TAG = "ItemBallTag"
+local BALL_TAG = "ItemBall"
 local MAX_BALLS = 5
 local RANDOM = Random.new()
 local BallPrefab = ServerStorage.Assets.ItemBall

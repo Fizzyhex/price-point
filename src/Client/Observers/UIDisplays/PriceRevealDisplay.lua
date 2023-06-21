@@ -5,16 +5,20 @@ local Observers = require(ReplicatedStorage.Packages.Observers)
 local PriceReveal = require(ReplicatedStorage.Client.UI.Components.PriceReveal)
 local RoundStateContainer = require(ReplicatedStorage.Client.StateContainers.RoundStateContainer)
 local Signal = require(ReplicatedStorage.Packages.Signal)
+local Bin = require(ReplicatedStorage.Shared.Util.Bin)
+local GameStateChannel = require(ReplicatedStorage.Client.EventChannels.GameStateChannel)
 
 local ANCESTORS = { workspace }
 
 local function PriceRevealDisplay()
     return Observers.observeTag("PriceRevealDisplay", function(parent: Instance)
+        local binAdd, binEmpty = Bin()
         local playEvent = Signal.new()
         local endEvent = Signal.new()
+        local onFinalPriceRevealed = Signal.new()
         local isAnimationRunning = false
 
-        local stopObservingRoundState = RoundStateContainer:Observe(function(oldState, newState)
+        binAdd(RoundStateContainer:Observe(function(oldState, newState)
             if newState.price and newState.phase == "PriceReveal" and isAnimationRunning == false then
                 isAnimationRunning = true
                 playEvent:Fire(newState.price)
@@ -22,18 +26,20 @@ local function PriceRevealDisplay()
                 isAnimationRunning = false
                 endEvent:Fire()
             end
-        end)
+        end))
+
+        binAdd(onFinalPriceRevealed:Connect(GameStateChannel.RaisePriceAnimationEnded))
 
         local ui = PriceReveal {
             PlayEvent = playEvent,
             EndEvent = endEvent,
+            OnFinalPriceRevealed = onFinalPriceRevealed,
             Parent = parent
         }
 
-        return function()
-            stopObservingRoundState()
-            ui:Destroy()
-        end
+        binAdd(ui)
+
+        return binEmpty
     end, ANCESTORS)
 end
 
