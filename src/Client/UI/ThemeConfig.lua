@@ -1,6 +1,6 @@
 local THEME_COLORS = {
     accent = {
-        light = Color3.fromRGB(30, 243, 65),
+        light = Color3.fromRGB(57, 181, 35),
         dark = Color3.fromRGB(110, 247, 132)
     },
 
@@ -10,17 +10,17 @@ local THEME_COLORS = {
     },
 
     background = {
-        light = Color3.fromRGB(255, 255, 255),
+        light = Color3.fromRGB(240, 240, 240),
         dark = Color3.fromRGB(20, 20, 20)
     },
 
     background_2 = {
-        light = Color3.fromRGB(235, 235, 235),
+        light = Color3.fromRGB(215, 215, 215),
         dark = Color3.fromRGB(40, 40, 40)
     },
 
     background_3 = {
-        light = Color3.fromRGB(225, 225, 225),
+        light = Color3.fromRGB(205, 205, 205),
         dark = Color3.fromRGB(60, 60, 60)
     },
 
@@ -84,12 +84,18 @@ local FONT_SIZES = {
     },
 }
 
+local SURFACE_GUI_BRIGHTNESS = {
+    light = 1,
+    dark = 2
+}
+
 -- Contains information about the games themes.
 -- This information should be accessed via the `ThemeProvider` module.
 local export = {
     THEME_COLORS = THEME_COLORS,
     FONT_FACES = FONT_FACES,
     FONT_SIZES = FONT_SIZES,
+    SURFACE_GUI_BRIGHTNESS = SURFACE_GUI_BRIGHTNESS
 }
 
 return export

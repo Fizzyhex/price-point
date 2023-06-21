@@ -21,10 +21,15 @@ local ThemeProvider = {
 
 print("currenttheme=", ThemeProvider._currentColorScheme:get())
 
+ThemeProvider._currentSurfaceGuiBrightness = Spring(Computed(function()
+    local theme = ThemeProvider._currentColorScheme:get()
+    return ThemeConfig.SURFACE_GUI_BRIGHTNESS[theme] or 1
+end), 20)
+
 for colorName, colorOptions in THEME_COLORS do
     currentColors[colorName] = Spring(Computed(function()
         return colorOptions[ThemeProvider._currentColorScheme:get()]
-    end))
+    end), 20)
 end
 
 for fontName, fontFaces in FONT_FACES do
@@ -71,6 +76,10 @@ function ThemeProvider:GetFontSize(key: string, sizingMode: string?)
         currentFontSizes[key][sizingMode]
         or currentFontSizes[key]["default"]
     return value
+end
+
+function ThemeProvider:GetSurfaceGuiBrightness()
+    return self._currentSurfaceGuiBrightness
 end
 
 return ThemeProvider

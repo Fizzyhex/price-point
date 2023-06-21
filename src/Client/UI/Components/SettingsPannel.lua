@@ -11,6 +11,8 @@ local ToggleGroup = require(ReplicatedStorage.Client.UI.Components.ToggleGroup)
 local VerticalListLayout = require(ReplicatedStorage.Client.UI.Components.VerticalListLayout)
 local HorizontalListLayout = require(ReplicatedStorage.Client.UI.Components.HorizontalListLayout)
 local PropsUtil = require(ReplicatedStorage.Client.UI.Util.PropsUtil)
+local ThemeProvider = require(ReplicatedStorage.Client.UI.Util.ThemeProvider)
+local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.ShorthandPadding)
 local New = Fusion.New
 local Value = Fusion.Value
 local Children = Fusion.Children
@@ -26,6 +28,11 @@ local function SettingsPannel(props)
         AutomaticSize = Enum.AutomaticSize.XY,
 
         [Children] = {
+            New "UIStroke" {
+                Thickness = 4,
+                Color = ThemeProvider:GetColor("accent")
+            },
+
             Header { Text = "Settings" },
             ForValues(settingsArray, function(setting)
                 local component
@@ -52,7 +59,7 @@ local function SettingsPannel(props)
 
                     [Children] = {
                         Label {
-                            Size = UDim2.fromOffset(300, 0),
+                            Size = UDim2.fromOffset(150, 0),
                             AutomaticSize = Enum.AutomaticSize.Y,
                             TextXAlignment = Enum.TextXAlignment.Left,
                             Text = Unwrap(setting.displayName or setting.id)
@@ -63,7 +70,8 @@ local function SettingsPannel(props)
                 }
             end, Fusion.cleanup),
 
-            VerticalListLayout { Padding = UDim.new(0, 12) }
+            VerticalListLayout { Padding = UDim.new(0, 12) },
+            ShorthandPadding { Padding = UDim.new(0, 24) }
         }
     }
 

@@ -11,14 +11,12 @@ local Children = Fusion.Children
 local function Backplate(props)
     local backplateProps = {
         BackgroundColor3 = ThemeProvider:GetColor("background_3"),
-        BackgroundTransparency = 0.1,
+        BackgroundTransparency = 0.08,
 
         [Children] = {
             New "UICorner" {
                 CornerRadius = UDim.new(0, 8)
             },
-
-            ShorthandPadding { Padding = UDim.new(0, 12) }
         }
     }
 
