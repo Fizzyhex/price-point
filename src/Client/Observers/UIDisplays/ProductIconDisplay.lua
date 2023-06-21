@@ -54,7 +54,7 @@ local function ProductIconDisplay()
                             BackgroundTransparency = 0.3
                         },
 
-                        ShorthandPadding { Padding = UDim.new(0, 12) }
+                        ShorthandPadding { Padding = UDim.new(0, 6) }
                     }
                 }
             }

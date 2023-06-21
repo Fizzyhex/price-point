@@ -6,6 +6,7 @@ local Trove = require(ReplicatedStorage.Packages.Trove)
 local ItemModelChannel = require(ServerStorage.Server.EventChannels.ItemModelChannel)
 
 local mannequinIdle = ServerStorage.Assets.Animations.MannequinIdle
+local RANDOM = Random.new()
 
 local function GetLargestScalar(vector: Vector3)
     return math.max(math.max(vector.X, vector.Y), vector.Z)
@@ -53,6 +54,18 @@ local function LoadIdleAnimation(humanoid: Humanoid)
     animationTrack.Looped = true
     animationTrack.Priority = Enum.AnimationPriority.Core
     animationTrack:Play()
+end
+
+local function FindSounds(container: Instance)
+    local sounds = {}
+
+    for _, child in container:GetDescendants() do
+        if child:IsA("Sound") then
+            table.insert(sounds, child)
+        end
+    end
+
+    return sounds
 end
 
 local function ResizeModel(model: Model, scale: number)
@@ -185,6 +198,13 @@ function ServerItemProjector:SetModel(projection: BasePart | Model, humanoidDesc
 
     SetModelScale(projection, GetLargestScalar(self._root.Size))
     local animation = projection:FindFirstChildWhichIsA("Animation")
+    local sounds = FindSounds(projection)
+
+    if #sounds > 0 then
+        local sound = sounds[RANDOM:NextInteger(1, #sounds)]
+        sound.Looped = false
+        sound:Play()
+    end
 
     if animation then
         local animator = GetProjectionAnimator(projection)

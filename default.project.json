@@ -12,6 +12,10 @@
         "$path": "src/Client"
       },
 
+      "TopbarIcon": {
+        "$path": "TopbarPlus/Icon"
+      },
+
       "Shared": {
         "$path": "src/Shared"
       }

@@ -144,6 +144,7 @@ local function GameOver(system)
 
         local podiumSpots = SetupPodium(orderedScores, podium)
         local revertPodiumTeleports = TeleportOntoPodium(orderedCharacters, podiumSpots)
+        ReplicatedStorage.Assets.Sounds.Win:Play()
         task.wait(system:GetConclusionTime())
         revertPodiumTeleports()
         podium:SetAttribute("isVisible", false)

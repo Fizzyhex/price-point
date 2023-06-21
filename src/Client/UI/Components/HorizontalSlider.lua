@@ -7,6 +7,8 @@ local Nest = require(ReplicatedStorage.Client.UI.Components.Nest)
 local PropsUtil = require(ReplicatedStorage.Client.UI.Util.PropsUtil)
 local Bin = require(ReplicatedStorage.Shared.Util.Bin)
 local ThemeProvider = require(ReplicatedStorage.Client.UI.Util.ThemeProvider)
+local Unwrap = require(ReplicatedStorage.Client.UI.Util.Unwrap)
+local Valueify = require(ReplicatedStorage.Client.UI.Util.Valueify)
 local New = Fusion.New
 local Value = Fusion.Value
 local Children = Fusion.Children
@@ -17,12 +19,14 @@ local Observer = Fusion.Observer
 local Cleanup = Fusion.Cleanup
 local Spring = Fusion.Spring
 
-local STRIPPED_PROPS = {}
+local STRIPPED_PROPS = { "Output", "Range" }
 
 local function HorizontalSlider(props)
+    local output = props.Output or Value(0)
     local barAbsolutePosition = Value(Vector2.zero)
     local barAbsoluteSize = Value(Vector2.zero)
     local inputPosition = Value(nil)
+    local range = Valueify(props.Range or NumberRange.new(0, 100))
     local barEndPosition = Computed(function()
         if barAbsolutePosition:get() == nil or barAbsoluteSize:get() == nil then
             return Vector2.zero
@@ -31,11 +35,15 @@ local function HorizontalSlider(props)
         return barAbsolutePosition:get() + Vector2.new(barAbsoluteSize:get().X, 0)
     end)
     local percentage = Computed(function()
+        local min, max = range:get().Min, range:get().Max
+
         if inputPosition:get() and barAbsolutePosition:get() and barAbsoluteSize:get() then
             local relative = inputPosition:get() - barAbsolutePosition:get()
-            return math.clamp(relative.X / barAbsoluteSize:get().X, 0, 1)
+            local newPercentage = math.clamp(relative.X / barAbsoluteSize:get().X, 0, 1)
+            output:set(((max - min) * newPercentage) + min)
+            return newPercentage
         else
-            return 0
+            return output:get() / (max - min)
         end
     end)
     local percentageSpring = Spring(percentage, 20, 0.7)

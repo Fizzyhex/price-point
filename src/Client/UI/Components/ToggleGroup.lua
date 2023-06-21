@@ -54,7 +54,11 @@ local function ToggleGroup(props)
                         currentSelection:set(id)
                     end
                 }
-            end),
+            end, Fusion.cleanup),
+
+            New "UICorner" {
+                CornerRadius = UDim.new(0, 12)
+            },
 
             HorizontalListLayout { Padding = UDim.new(0, 8) },
             ShorthandPadding { Padding = UDim.new(0, 8) }

@@ -16,7 +16,7 @@ function PropsUtil.PatchProps(oldProps, newProps)
             result[key] = nil
         elseif key == Fusion.Children and typeof(value) == "table" then
             for key2, value2 in value do
-                table.insert(result[key2], value2)
+                table.insert(result[key], value2)
             end
         else
             result[key] = value

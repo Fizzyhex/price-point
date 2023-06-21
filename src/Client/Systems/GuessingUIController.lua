@@ -36,21 +36,21 @@ local function GuessingUIController()
         return
             if isGuessingAvailable:get() then UDim2.fromScale(0.5, 0.9)
             else UDim2.new(0.5, 0, 2, 0)
-    end), 10)
+    end), 13, 0.8)
 
     local selectSounds: { Sound } = {
         New "Sound" {
             Name = "select_01",
             SoundId = "rbxassetid://10128760939",
             SoundGroup = SoundUtil.FindSoundGroup("SFX"),
-            Volume = 0.6
+            Volume = 3
         },
 
         New "Sound" {
             Name = "select_02",
             SoundId = "rbxassetid://10066968815",
             SoundGroup = SoundUtil.FindSoundGroup("SFX"),
-            Volume = 0.6
+            Volume = 3
         }
     }
 
@@ -137,7 +137,13 @@ local function GuessingUIController()
         IgnoreGuiInset = true,
 
         [Children] = {
-            currentGuessingUi,
+            New "CanvasGroup" {
+                GroupTransparency = 0.1,
+                Size = UDim2.fromScale(1, 1),
+                BackgroundTransparency = 1,
+                [Children] = currentGuessingUi,
+            },
+
             selectSounds
         }
     }

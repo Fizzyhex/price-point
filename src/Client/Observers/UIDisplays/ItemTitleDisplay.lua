@@ -16,6 +16,15 @@ local Red = require(ReplicatedStorage.Packages.Red)
 local ThemeProvider = require(ReplicatedStorage.Client.UI.Util.ThemeProvider)
 
 local ANCESTORS = { workspace }
+local RANDOM = Random.new()
+local newGameMessages = {
+    "why not go grab a drink?",
+    "why not go run your bath?",
+    "woo new round!!",
+    "preparing freshly scraped items from the roblox catalog...",
+    "this time... This time i will win.",
+    "didn't you leave the oven on?"
+}
 
 local function TrimStart(str: string)
     return str:match'^%s*(.*)'
@@ -116,11 +125,7 @@ local function ItemTitleDisplay()
                         local phase = currentPhase:get()
 
                         if phase == "Intermission" then
-                            if math.random(1, 100) == 1 then
-                                return "a new game WON'T start shortly. hehe"
-                            else
-                                return "A new game will start shortly."
-                            end
+                            return newGameMessages[RANDOM:NextInteger(1, #newGameMessages)]
                         elseif phase == "GameOver" then
                             return "gg"
                         else

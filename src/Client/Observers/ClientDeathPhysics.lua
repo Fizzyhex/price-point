@@ -4,7 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Observers = require(ReplicatedStorage.Packages.Observers)
 
 local LOCAL_PLAYER = Players.LocalPlayer
-local DEATH_FORCE_MIN, DEATH_FORCE_MAX = 10, 40
+local DEATH_FORCE_MIN, DEATH_FORCE_MAX = 20, 40
 local RANDOM = Random.new()
 
 local function ClientDeathPhysics()

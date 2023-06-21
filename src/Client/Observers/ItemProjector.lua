@@ -87,6 +87,15 @@ local function ItemProjector()
             tween:Play()
             tween.Completed:Wait()
             customTweener:Destroy()
+
+            if not child:GetAttribute("DontRotate") then
+                task.delay(3, function()
+                    for _ = 1, 6 do
+                        child:PivotTo(child:GetPivot() * CFrame.Angles(0, math.rad(360 / 6), 0))
+                        task.wait(1)
+                    end
+                end)
+            end
         end))
 
         binAdd(container.ChildRemoved:Connect(function(child: Instance)

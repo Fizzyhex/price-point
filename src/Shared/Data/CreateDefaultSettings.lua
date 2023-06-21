@@ -25,11 +25,10 @@ local function ToggleSetting(kwargs: {
     defaultValue: any
 })
     return {
-        type = "NumberRange",
+        type = "Toggle",
         id = kwargs.id,
         displayName = kwargs.displayName,
-        min = kwargs.min,
-        max = kwargs.max,
+        options = kwargs.options,
         value = Fusion.Value(kwargs.defaultValue)
     }
 end
