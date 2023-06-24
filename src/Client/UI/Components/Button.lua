@@ -12,6 +12,7 @@ local ThemeProvider = require(ReplicatedStorage.Client.UI.Util.ThemeProvider)
 local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.ShorthandPadding)
 local StripProps = require(ReplicatedStorage.Client.UI.Util.StripProps)
 local Unwrap = require(ReplicatedStorage.Client.UI.Util.Unwrap)
+local PropsUtil = require(ReplicatedStorage.Client.UI.Util.PropsUtil)
 
 local STRIPPED_PROPS = { "OnClick", "IsActive" }
 local TEXT_PADDING = UDim.new(0, 12)
@@ -20,7 +21,7 @@ local function Button(props)
     local isActive = props.IsActive
 
     local clickSound: Sound
-    local textButton = New "TextButton" {
+    local buttonProps = {
         AutoButtonColor = true,
         FontFace = props.Font or ThemeProvider:GetFontFace("body"),
         TextColor3 = props.Font or ThemeProvider:GetColor("body"),
@@ -75,13 +76,15 @@ local function Button(props)
         },
     }
 
+    local textButton = New("TextButton")(PropsUtil.PatchProps(buttonProps, PropsUtil.StripProps(props, STRIPPED_PROPS)))
+
     clickSound = New "Sound" {
         Name = "ClickSound",
         SoundId = "rbxassetid://6042053626",
         Parent = textButton
     }
 
-    return Hydrate(textButton)(StripProps(props, STRIPPED_PROPS))
+    return textButton
 end
 
 return Button

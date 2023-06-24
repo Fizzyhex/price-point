@@ -176,7 +176,9 @@ function ServerItemProjector:SetModel(projection: BasePart | Model, humanoidDesc
     end
 
     if projection:IsA("BasePart") then
+        local old = projection
         projection = PartToModel(projection)
+        projection:SetAttribute("DontRotate", old:GetAttribute("DontRotate"))
     end
 
     local thumbnailCamera: Camera = projection:FindFirstChild("ThumbnailCamera")

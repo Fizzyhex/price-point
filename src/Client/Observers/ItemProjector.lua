@@ -3,7 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
 local Observers = require(ReplicatedStorage.Packages.Observers)
-local Bin = require(ReplicatedStorage.Packages.Red).Bin
+local Bin = require(ReplicatedStorage.Shared.Util.Bin)
 local CustomTweener = require(ReplicatedStorage.Shared.CustomTweener)
 
 local deletionEffect = ReplicatedStorage.Assets.ParticleEffects.Deletion

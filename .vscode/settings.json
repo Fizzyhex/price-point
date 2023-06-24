@@ -1,2 +1,6 @@
 {
+    "robloxLsp.diagnostics.globals": [
+        "IconController",
+        "IconController"
+    ]
 }

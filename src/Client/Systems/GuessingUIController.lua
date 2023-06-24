@@ -34,7 +34,7 @@ local function GuessingUIController()
     local currentGuessingUi = Value(nil)
     local uiPosition = Spring(Computed(function()
         return
-            if isGuessingAvailable:get() then UDim2.fromScale(0.5, 0.9)
+            if isGuessingAvailable:get() then UDim2.new(0.5, 0, 1, -48)
             else UDim2.new(0.5, 0, 2, 0)
     end), 13, 0.8)
 

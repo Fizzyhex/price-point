@@ -19,8 +19,6 @@ local ThemeProvider = {
     _currentTextScale = Value(1),
 }
 
-print("currenttheme=", ThemeProvider._currentColorScheme:get())
-
 ThemeProvider._currentSurfaceGuiBrightness = Spring(Computed(function()
     local theme = ThemeProvider._currentColorScheme:get()
     return ThemeConfig.SURFACE_GUI_BRIGHTNESS[theme] or 1

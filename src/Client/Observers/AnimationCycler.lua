@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Observers = require(ReplicatedStorage.Packages.Observers)
-local Bin = require(ReplicatedStorage.Packages.Red).Bin
+local Bin = require(ReplicatedStorage.Shared.Util.Bin)
 
 local ANCESTORS = { workspace }
 local CYCLE_SPEED = 3

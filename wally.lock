@@ -3,14 +3,9 @@
 registry = "test"
 
 [[package]]
-name = "bubshayz/stringutil"
-version = "1.0.0"
-dependencies = []
-
-[[package]]
 name = "do-not-publish/price-point"
 version = "0.1.0"
-dependencies = [["Baseline", "fizzyhex/baseline@0.2.2"], ["Component", "sleitnick/component@2.4.6"], ["Fusion", "elttob/fusion@0.2.0"], ["Observers", "sleitnick/observers@0.3.2"], ["Promise", "evaera/promise@4.0.0"], ["Red", "uncontained0/red@1.2.2"], ["Signal", "sleitnick/signal@1.5.0"], ["StringUtil", "bubshayz/stringutil@1.0.0"], ["TableUtil", "sleitnick/table-util@1.2.0"], ["Trove", "sleitnick/trove@0.5.0"]]
+dependencies = [["Baseline", "fizzyhex/baseline@0.2.2"], ["Component", "sleitnick/component@2.4.6"], ["Fusion", "elttob/fusion@0.2.0"], ["Observers", "sleitnick/observers@0.3.2"], ["Promise", "evaera/promise@4.0.0"], ["Red", "red-blox/red@2.0.0-rc.4"], ["Signal", "sleitnick/signal@1.5.0"], ["TableUtil", "sleitnick/table-util@1.2.0"], ["Trove", "sleitnick/trove@0.5.0"]]
 
 [[package]]
 name = "elttob/fusion"
@@ -25,6 +20,26 @@ dependencies = []
 [[package]]
 name = "fizzyhex/baseline"
 version = "0.2.2"
+dependencies = []
+
+[[package]]
+name = "red-blox/clock"
+version = "1.0.0"
+dependencies = []
+
+[[package]]
+name = "red-blox/promise"
+version = "1.0.0"
+dependencies = [["Spawn", "red-blox/spawn@1.0.0"]]
+
+[[package]]
+name = "red-blox/red"
+version = "2.0.0-rc.4"
+dependencies = [["Clock", "red-blox/clock@1.0.0"], ["Promise", "red-blox/promise@1.0.0"], ["Spawn", "red-blox/spawn@1.0.0"]]
+
+[[package]]
+name = "red-blox/spawn"
+version = "1.0.0"
 dependencies = []
 
 [[package]]
@@ -60,9 +75,4 @@ dependencies = []
 [[package]]
 name = "sleitnick/trove"
 version = "0.5.0"
-dependencies = []
-
-[[package]]
-name = "uncontained0/red"
-version = "1.2.2"
 dependencies = []

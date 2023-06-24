@@ -9,6 +9,9 @@ local CachedInsertService = require(ServerStorage.Server.CachedInsertService)
 local ModelUtil = require(ServerStorage.Server.Util.ModelUtil)
 local catalogModels = ServerStorage.Assets.CatalogModels
 
+-- Addresses this incorrectly named face: https://www.roblox.com/catalog/2830497827/Torque-the-Green-Orc
+local DISPLAY_ALL_DECALS_AS_FACES = true
+
 local function RecursivelyAnchor(subject: Instance)
     if subject:IsA("BasePart") then
         subject.Anchored = true
@@ -149,7 +152,6 @@ function MarketplacePreviewUtil.CreateBundlePreview(bundleDetails): Model
         end
 
         if bundleDetails.BundleType == "DynamicHead" then
-            print("Handling dynamic head")
             -- DynamicHead bundles are only meant to contain character information about the Head,
             -- so the body can end up looking strange. Replace a new character's head with the
             -- dynamic head instead.
@@ -173,7 +175,7 @@ function MarketplacePreviewUtil.CreateAssetPreview(asset: Instance)
     RecursivelyDisableScripts(asset)
 
     if asset:IsA("Decal") or asset:IsA("Texture") then
-        if asset.Name == "face" then
+        if asset.Name == "face" or DISPLAY_ALL_DECALS_AS_FACES then
             local head = catalogModels.Head:Clone()
             head.DefaultFace:Destroy()
             asset.Parent = head

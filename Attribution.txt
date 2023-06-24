@@ -1,6 +1,16 @@
-SFX
-soft-blip-E Major by newagesoup https://freesound.org/people/newagesoup/sounds/339343/
-Synth Sparkle by komit.wav https://freesound.org/people/komit.wav/sounds/399294/
-Puzzle Game Victory Melody by Eponn https://freesound.org/people/Eponn/sounds/619832/
-Menu Tick by LorenzoTheGreat https://freesound.org/people/LorenzoTheGreat/sounds/417792/
-UI App by Eponn
+<b>Sound Effects</b>
+
+Freesound
+- soft-blip-E Major by newagesoup
+- Synth Sparkle by komit.wav
+- Puzzle Game Victory Melody by Eponn
+- Menu Tick by LorenzoTheGreat
+- UI App by Eponn
+
+<b>Inspiration</b>
+Price Guess by Jar
+Guess The Price
+
+<b>Additional Credits</b>
+Thank you to the Roblox OSS community for your amazing libraries and utilities, especially Fusion which was used for most of the UI in this game.
+And of course, <b>you</b> checking out the game :>

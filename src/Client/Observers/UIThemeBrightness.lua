@@ -8,14 +8,10 @@ local Hydrate = Fusion.Hydrate
 local ANCESTORS = { workspace }
 
 local function UIThemeBrightness()
-    print("loading uith")
-
     return Observers.observeTag("UIThemeBrightness", function(surfaceGui: SurfaceGui)
         Hydrate(surfaceGui) {
             Brightness = ThemeProvider:GetSurfaceGuiBrightness()
         }
-
-        print("Hydrated", surfaceGui, "with", ThemeProvider:GetSurfaceGuiBrightness():get())
 
         return function()
             Hydrate(surfaceGui) {

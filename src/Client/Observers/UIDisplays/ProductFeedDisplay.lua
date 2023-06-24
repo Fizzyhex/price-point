@@ -15,6 +15,7 @@ local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 local Red = require(ReplicatedStorage.Packages.Red)
 local NetworkNamespaces = require(ReplicatedStorage.Shared.Constants.NetworkNamespaces)
 local Nest = require(ReplicatedStorage.Client.UI.Components.Nest)
+local Bin = require(ReplicatedStorage.Shared.Util.Bin)
 
 local ANCESTORS = { workspace }
 local TAG = "ProductFeedDisplay"
@@ -65,7 +66,7 @@ local function ProductFeedDisplay()
         if USE_RED_HACK then
             local humanoid = LOCAL_PLAYER.Character and LOCAL_PLAYER.Character:FindFirstChildWhichIsA("Humanoid")
             avatarNetwork:Fire("Equip", itemId, assetType)
-            local connectionBinAdd, connectionBinEmpty = Red.Bin()
+            local connectionBinAdd, connectionBinEmpty = Bin()
             local currentDescription = humanoid:GetAppliedDescription()
 
             local function PromptSave(humanoidDescription: HumanoidDescription)

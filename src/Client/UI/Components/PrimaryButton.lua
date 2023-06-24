@@ -10,7 +10,7 @@ local Hydrate = Fusion.Hydrate
 local function PrimaryButton(props)
     local newProps = table.clone(props)
     newProps.BackgroundColor3 = newProps.BackgroundColor3 or ThemeProvider:GetColor("accent")
-    newProps.TextColor3 = props.TextColor3 or Color3.new(0, 0, 0)
+    newProps.TextColor3 = props.TextColor3 or ThemeProvider:GetColor("accent_contrast_body")
     newProps.Name = newProps.Name or "PrimaryButton"
     return Button(newProps)
 end

@@ -15,6 +15,7 @@ local ScoreboardEntry = require(ReplicatedStorage.Client.UI.Components.Scoreboar
 local NetworkNamespaces = require(ReplicatedStorage.Shared.Constants.NetworkNamespaces)
 local RoundStateContainer = require(ReplicatedStorage.Client.StateContainers.RoundStateContainer)
 local ScoreboardChannel = require(ReplicatedStorage.Client.EventChannels.ScoreboardChannel)
+local Bin = require(ReplicatedStorage.Shared.Util.Bin)
 
 local ANCESTORS = { workspace }
 
@@ -53,7 +54,7 @@ local function Scoreboard()
     end)
 
     return Observers.observeTag("Scoreboard", function(container: Model)
-        local binAdd, binEmpty = Red.Bin()
+        local binAdd, binEmpty = Bin()
         local entryPrefab = container:WaitForChild("Entry")
         entryPrefab.Parent = nil
         entryPrefab:WaitForChild("SurfaceGui")
@@ -129,7 +130,7 @@ local function Scoreboard()
         end
 
         binAdd(Observers.observePlayer(function(player)
-            local playerBinAdd, playerBinEmpty = Red.Bin()
+            local playerBinAdd, playerBinEmpty = Bin()
             local score = Value(0)
             local key = tostring(player.UserId)
             local guess = Value(nil)

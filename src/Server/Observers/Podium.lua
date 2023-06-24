@@ -3,12 +3,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Observers = require(ReplicatedStorage.Packages.Observers)
 local Red = require(ReplicatedStorage.Packages.Red)
+local Bin = require(ReplicatedStorage.Shared.Util.Bin)
 
 local ANCESTORS = { workspace }
 
 local function Podium()
     local stopObservingTag = Observers.observeTag("Podium", function(podium: Model)
-        local binAdd, binEmpty = Red.Bin()
+        local binAdd, binEmpty = Bin()
         local podiumSpots = {}
 
         for _, child in podium:GetChildren() do

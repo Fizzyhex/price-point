@@ -4,6 +4,7 @@ local TweenService = game:GetService("TweenService")
 
 local Observers = require(ReplicatedStorage.Packages.Observers)
 local Red = require(ReplicatedStorage.Packages.Red)
+local Bin = require(ReplicatedStorage.Shared.Util.Bin)
 
 local function Podium()
     local STORAGE = Instance.new("Folder")
@@ -19,7 +20,7 @@ local function Podium()
         local baseParent = podium.Parent
         local tweener = Instance.new("CFrameValue")
         tweener.Value = basePivot
-        local binAdd, binEmpty = Red.Bin()
+        local binAdd, binEmpty = Bin()
         local currentTween
 
         local function CancelCurrentTween()

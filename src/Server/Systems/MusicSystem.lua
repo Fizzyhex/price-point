@@ -5,11 +5,13 @@ local ServerGameStateChannel = require(ServerStorage.Server.EventChannels.Server
 local RandomPool = require(ReplicatedStorage.Shared.RandomPool)
 local SoundUtil = require(ReplicatedStorage.Shared.Util.SoundUtil)
 local CreateLogger = require(ReplicatedStorage.Shared.CreateLogger)
+local Bin = require(ReplicatedStorage.Shared.Util.Bin)
 
 local tracksFolder = ReplicatedStorage.Assets.BackgroundMusic
 local logger = CreateLogger(script)
 
 local function MusicSystem()
+    local binAdd, binEmpty = Bin()
     local musicPool = RandomPool.new(tracksFolder:GetChildren())
     local musicSoundGroup = SoundUtil.FindSoundGroup("Music")
     local currentTrack
@@ -25,15 +27,17 @@ local function MusicSystem()
         sound:Play()
     end
 
-    local stopIntermissionObserver = ServerGameStateChannel.ObserveIntermissionBegun(function()
+    local function OnMusicEvent()
         if currentTrack and currentTrack.IsPlaying then
             return
         end
 
         task.spawn(PlayTrack, musicPool:Pop())
-    end)
+    end
 
-    return stopIntermissionObserver
+    binAdd(ServerGameStateChannel.ObserveIntermissionBegun(OnMusicEvent))
+    binAdd(ServerGameStateChannel.ObserveNewRound(OnMusicEvent))
+    return binEmpty
 end
 
 return MusicSystem

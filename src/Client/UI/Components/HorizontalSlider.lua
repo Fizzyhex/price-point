@@ -51,7 +51,10 @@ local function HorizontalSlider(props)
     local inputBinAdd, inputBinEmpty = Bin()
 
     local function OnInputChanged(input: InputObject)
-        if input.UserInputType == Enum.UserInputType.MouseMovement and inUse:get() then
+        if
+            (input.UserInputType == Enum.UserInputType.MouseMovement
+            or input.UserInputType == Enum.UserInputType.Touch) and inUse:get()
+        then
             inputPosition:set(Vector2.new(input.Position.X, input.Position.Y))
         end
     end

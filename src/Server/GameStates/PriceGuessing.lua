@@ -6,6 +6,7 @@ local CreateLogger = require(ReplicatedStorage.Shared.CreateLogger)
 
 local MarketplacePreviewUtil = require(ServerStorage.Server.Util.MarketplacePreviewUtil)
 local ItemModelChannel = require(ServerStorage.Server.EventChannels.ItemModelChannel)
+local ServerGameStateChannel = require(ServerStorage.Server.EventChannels.ServerGameStateChannel)
 
 local logger = CreateLogger(script)
 
@@ -28,6 +29,8 @@ local function PriceGuessing(system)
         local receivedGuesses = 0
         local isResolved = false
         local timerThread
+
+        ServerGameStateChannel.RaiseNewRound()
 
         if productData.BundleType then
             assetTypeName = "Bundle"

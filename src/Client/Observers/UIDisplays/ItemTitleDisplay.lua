@@ -14,6 +14,7 @@ local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.Shorthan
 local RoundStateContainer = require(ReplicatedStorage.Client.StateContainers.RoundStateContainer)
 local Red = require(ReplicatedStorage.Packages.Red)
 local ThemeProvider = require(ReplicatedStorage.Client.UI.Util.ThemeProvider)
+local Bin = require(ReplicatedStorage.Shared.Util.Bin)
 
 local ANCESTORS = { workspace }
 local RANDOM = Random.new()
@@ -40,7 +41,7 @@ end
 
 local function ItemTitleDisplay()
     return Observers.observeTag("ItemTitleDisplay", function(parent: Instance)
-        local binAdd, binEmpty = Red.Bin()
+        local binAdd, binEmpty = Bin()
         local currentProductData = Value(nil)
         local winnerName = Value(nil)
         local currentPhase = Value(nil)
@@ -113,7 +114,7 @@ local function ItemTitleDisplay()
                     AnchorPoint = Vector2.new(0, 1),
                     Size = UDim2.fromScale(1, 0.4),
 
-                    TextTransparency = 0.5,
+                    TextTransparency = 0.1,
                     TextXAlignment = Enum.TextXAlignment.Center,
                     TextYAlignment = Enum.TextYAlignment.Center,
                     TextScaled = true,

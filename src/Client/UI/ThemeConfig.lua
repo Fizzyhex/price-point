@@ -1,6 +1,6 @@
 local THEME_COLORS = {
     accent = {
-        light = Color3.fromRGB(57, 181, 35),
+        light = Color3.fromRGB(107, 183, 60),
         dark = Color3.fromRGB(110, 247, 132)
     },
 
@@ -25,7 +25,7 @@ local THEME_COLORS = {
     },
 
     header = {
-        light = Color3.fromRGB(20, 20, 20),
+        light = Color3.fromRGB(26, 47, 26),
         dark = Color3.fromRGB(230, 230, 230)
     },
 
@@ -46,12 +46,12 @@ local THEME_COLORS = {
 }
 
 THEME_COLORS.accent_contrast_body = {
-    light = THEME_COLORS.body.dark,
+    light = THEME_COLORS.body.light,
     dark = THEME_COLORS.body.light
 }
 
 THEME_COLORS.accent_contrast_header = {
-    light = THEME_COLORS.header.dark,
+    light = THEME_COLORS.header.light,
     dark = THEME_COLORS.header.light
 }
 

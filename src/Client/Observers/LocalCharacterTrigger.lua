@@ -3,14 +3,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 
 local Observers = require(ReplicatedStorage.Packages.Observers)
-local Bin = require(ReplicatedStorage.Packages.Red).Bin
+local Bin = require(ReplicatedStorage.Shared.Util.Bin)
 
 local ANCESTORS = { workspace }
 local LOCAL_PLAYER = Players.LocalPlayer
 
-local channels = {
-    ZoneTriggerChannel = require(ReplicatedStorage.Client.EventChannels.ZoneTriggerChannel)
-}
+local channels = { ZoneTriggerChannel = require(ReplicatedStorage.Client.EventChannels.ZoneTriggerChannel) }
 
 -- Enables a GUI when the trigger is entered by the local player.
 local function LocalCharacterTrigger()
@@ -23,12 +21,12 @@ local function LocalCharacterTrigger()
         local function RaiseEvents(container: Folder, ...)
             local raisers = {}
 
-            for _, child in container:GetChildren() do
+            for _, child: Instance in container:GetChildren() do
                 local channelName = child:GetAttribute("channel")
                 local eventName = child:GetAttribute("event")
                 local channel = channels[channelName]
                 local raiseEvent = channel[eventName]
-                raiseEvent(child.Value, ...)
+                raiseEvent(child.Value, child:GetAttributes())
             end
 
             return raisers
