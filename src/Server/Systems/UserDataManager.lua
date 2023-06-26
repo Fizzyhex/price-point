@@ -48,8 +48,8 @@ local function ValidateSettings(unsure: {})
         if settingData.options then
             local isValid = false
 
-            for option in settingData.options do
-                if option == userValue then
+            for id in settingData.options do
+                if id == userValue then
                     isValid = true
                     break
                 end

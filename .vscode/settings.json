@@ -1,6 +1,6 @@
 {
-    "robloxLsp.diagnostics.globals": [
-        "IconController",
-        "IconController"
+    "robloxLsp.diagnostics.disable": [
+        "empty-block"
     ]
+
 }

@@ -23,7 +23,7 @@ local function FallCamera()
 
             local runConnection
             runConnection = RunService.RenderStepped:Connect(function(delta)
-                if humanoidRootPart:IsDescendantOf(workspace) == false then
+                if character:IsDescendantOf(workspace) == false then
                     runConnection:Disconnect()
                     return
                 end
@@ -34,8 +34,6 @@ local function FallCamera()
                 )
             end)
         end
-
-        print("WAITING FOR DOWNFALL")
 
         local heartbeatConnection
         heartbeatConnection = RunService.Heartbeat:Connect(function()

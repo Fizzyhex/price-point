@@ -5,9 +5,9 @@ return function(target)
     local ui = ToggleGroup {
         Parent = target,
         Options = {
-            dark = "Dark",
-            light = "Light",
-            awesome = "Awesome"
+            { dark = "Dark" },
+            { light = "Light" },
+            { awesome = "Awesome"}
         }
     }
 

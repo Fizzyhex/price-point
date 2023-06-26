@@ -20,13 +20,13 @@ local function CameraOffsetHandler()
     local cameraOffsetGoal = Fusion.Computed(function()
         local value = zoneOffset:get()
 
-        if isKeyboardOpen then
+        if isKeyboardOpen:get() then
             value *= 2.5
         end
 
         return value
     end)
-    local cameraOffsetSpring = Fusion.Spring(cameraOffsetGoal, 10)
+    local cameraOffsetSpring = Fusion.Spring(cameraOffsetGoal, 7, 0.8)
 
     local function GetHumanoid(): Humanoid?
         return LOCAL_PLAYER.Character and LOCAL_PLAYER.Character:FindFirstChildWhichIsA("Humanoid")

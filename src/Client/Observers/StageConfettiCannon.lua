@@ -1,26 +1,15 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Observers = require(ReplicatedStorage.Packages.Observers)
+local AnimatorUtil = require(ReplicatedStorage.Shared.Util.AnimatorUtil)
 
 local shootAnimation: Animation = ReplicatedStorage.Assets.Animations.StageConfettiCannon.Shoot
-
-local function GetAnimator(target: Instance): Animator
-    local animator = target:FindFirstChildWhichIsA("Animator")
-
-    if animator then
-        return animator
-    else
-        animator = Instance.new("Animator")
-        animator.Parent = target
-        return animator
-    end
-end
 
 -- Animates stage confetti cannons on the client
 local function StageConfettiCannon()
     Observers.observeTag("StageConfettiCannon", function(cannon: Model)
         local onFire: BindableEvent = cannon:WaitForChild("ConfettiPart"):WaitForChild("OnFire")
-        local animator = GetAnimator(cannon:WaitForChild("AnimationController"))
+        local animator = AnimatorUtil.GetAnimator(cannon:WaitForChild("AnimationController"))
         local shootAnimationTrack = animator:LoadAnimation(shootAnimation)
         local smoke: ParticleEmitter = cannon
             :WaitForChild("Tube")

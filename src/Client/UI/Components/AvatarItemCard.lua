@@ -52,6 +52,14 @@ local function AvatarItemCard(props)
         end
     end)
 
+    local isPurchasable = Computed(function()
+        if itemDetails:get() then
+            return itemDetails:get().IsPurchasable
+        else
+            return true
+        end
+    end)
+
     local itemName = Computed(function()
         if itemDetails:get() then
             return itemDetails:get().Name or "???"
@@ -190,7 +198,7 @@ local function AvatarItemCard(props)
                     return Unwrap(color)
                 end),
                 Visible = Computed(function()
-                    return Unwrap(detailsHidden) ~= true
+                    return Unwrap(detailsHidden) ~= true and (isPurchasable:get() or isOwned:get() or isEquipped:get())
                 end),
 
                 Text = Computed(function()
@@ -202,6 +210,16 @@ local function AvatarItemCard(props)
                 end),
 
                 [OnEvent "MouseButton1Click"] = OnButtonClicked
+            },
+
+            Label {
+                Text = "Off Sale",
+                Position = UDim2.fromScale(1, 0),
+                AnchorPoint = Vector2.new(1, 0),
+                TextTransparency = 0.3,
+                Visible = Computed(function()
+                    return isPurchasable:get() == false and isOwned:get() == false
+                end)
             },
 
             New "UICorner" {

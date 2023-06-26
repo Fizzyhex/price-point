@@ -26,8 +26,10 @@ local function ToggleGroup(props)
         BackgroundColor3 = ThemeProvider:GetColor("background_2"),
 
         [Children] = {
-            ForPairs(props.Options, function(id: string, displayName: string)
-                return id, Button {
+            ForPairs(props.Options, function(index, option)
+                local id, displayName = next(option)
+
+                return index, Button {
                     Text = displayName,
                     Size = UDim2.fromOffset(150, 0),
                     IsActive = Computed(function()

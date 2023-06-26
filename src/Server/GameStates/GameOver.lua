@@ -41,7 +41,7 @@ local function SetupPodium(orderedScores, podium)
             continue
         end
 
-        if podium:GetAttribute("Enabled") == false then
+        if part:GetAttribute("Enabled") == false then
             continue
         end
 

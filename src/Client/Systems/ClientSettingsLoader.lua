@@ -20,6 +20,7 @@ local function ClientSettingsLoader()
         logger.print("Received settings from server", data)
 
         if not data then
+            logger.print("No data - returning")
             return
         end
 
@@ -40,7 +41,6 @@ local function ClientSettingsLoader()
         end
 
         userDataNetwork:Fire("SaveSettings", TableUtil.Copy(savePayload))
-        logger.print("Sent save to server", savePayload)
         table.clear(savePayload)
     end
 
@@ -59,6 +59,7 @@ local function ClientSettingsLoader()
 
     local function ObserveSettings()
         for _, setting in ClientSettings do
+            logger.print("Observe setting", setting)
             Fusion.Observer(setting.value):onChange(function()
                 savePayload[setting.id] = setting.value:get()
                 TickSaveClock()

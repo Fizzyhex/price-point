@@ -1,12 +1,11 @@
 local CollectionService = game:GetService("CollectionService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 
 local ItemModelChannel = require(ServerStorage.Server.EventChannels.ItemModelChannel)
 local ModelUtil = require(ServerStorage.Server.Util.ModelUtil)
 
 local BALL_TAG = "ItemBall"
-local MAX_BALLS = 5
+local MAX_BALLS = 6
 local RANDOM = Random.new()
 local BallPrefab = ServerStorage.Assets.ItemBall
 local ALLOWED_ASSET_TYPES = {
@@ -41,7 +40,7 @@ local function ItemBallSpawner(props)
     local function InforceBallLimit()
         local existingBalls = CollectionService:GetTagged(BALL_TAG)
 
-        if #existingBalls >= MAX_BALLS then
+        if #existingBalls >= MAX_BALLS and RANDOM:NextInteger(1, 2) == 1 then
             existingBalls[1]:Destroy()
         end
     end
@@ -98,6 +97,8 @@ local function ItemBallSpawner(props)
             end
         end
 
+        InforceBallLimit()
+
         local modelCFrame, modelSize = model:GetBoundingBox()
         local ballScale = math.clamp(GetLargestScalar(modelSize) + 2, 7, 16)
         ballScale += RANDOM:NextNumber(1, 3)
@@ -112,8 +113,6 @@ local function ItemBallSpawner(props)
         ball.PrimaryPart.CollideSound:Play()
         ball:PivotTo(spawnCFrame)
         ball.Parent = workspace
-
-        InforceBallLimit()
     end
 
     ItemModelChannel.ObserveItemChanged(OnItemChanged)

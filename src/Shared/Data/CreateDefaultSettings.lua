@@ -44,8 +44,8 @@ local function CreateDefaultSettings()
         id = "Theme",
         displayName = "Theme",
         defaultValue = "dark",
-        options = { light = "Light", dark = "Dark" },
-        layoutOrder = 1
+        options = { { light = "Light" }, { dark = "Dark" }},
+        layoutOrder = 2
     })
 
     clientSettings.MusicVolume = NumberRangeSetting({
@@ -54,7 +54,15 @@ local function CreateDefaultSettings()
         min = 0,
         max = 100,
         defaultValue = 25,
-        layoutOrder = 2
+        layoutOrder = 1
+    })
+
+    clientSettings.PlayerCollisionsEnabled = ToggleSetting({
+        id = "PlayerCollisions",
+        displayName = "Player Collisions",
+        defaultValue = true,
+        options = { { [true] = "On" }, { [false] = "Off" } },
+        layoutOrder = 3
     })
 
     return clientSettings
