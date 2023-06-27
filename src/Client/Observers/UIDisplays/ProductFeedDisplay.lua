@@ -9,7 +9,8 @@ local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Value = Fusion.Value
 local Children = Fusion.Children
 
-local ProductFeedStateContainer = require(ReplicatedStorage.Client.StateContainers.ProductFeedStateContainer)
+local StateContainers = require(ReplicatedStorage.Shared.StateContainers)
+local productFeedStateContainer = StateContainers.productFeedStateContainer
 local AvatarItemFeed = require(ReplicatedStorage.Client.UI.Components.AvatarItemFeed)
 local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 local Red = require(ReplicatedStorage.Packages.Red)
@@ -28,7 +29,7 @@ local function ProductFeedDisplay()
     local products = Value({})
     local avatarNetwork = Red.Client(NetworkNamespaces.AVATAR)
 
-    ProductFeedStateContainer:Observe(function(_, newState)
+    productFeedStateContainer:Observe(function(_, newState)
         local currentProductData = products:get()
         local newProductData = {}
 
@@ -133,7 +134,7 @@ local function ProductFeedDisplay()
     end
 
     if ADD_TEST_ITEMS then
-        ProductFeedStateContainer:Patch({
+        productFeedStateContainer:Patch({
             [1] = {id = 9490601996, type = Enum.AvatarItemType.Asset},
             [2] = {id = 496, type = Enum.AvatarItemType.Bundle}
         })

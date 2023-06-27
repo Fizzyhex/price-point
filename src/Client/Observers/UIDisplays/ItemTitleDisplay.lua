@@ -11,7 +11,8 @@ local Computed = Fusion.Computed
 local Header = require(ReplicatedStorage.Client.UI.Components.Header)
 local Background = require(ReplicatedStorage.Client.UI.Components.Background)
 local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.ShorthandPadding)
-local RoundStateContainer = require(ReplicatedStorage.Client.StateContainers.RoundStateContainer)
+local StateContainers = require(ReplicatedStorage.Shared.StateContainers)
+local roundStateContainer = StateContainers.roundStateContainer
 local Red = require(ReplicatedStorage.Packages.Red)
 local ThemeProvider = require(ReplicatedStorage.Client.UI.Util.ThemeProvider)
 local Bin = require(ReplicatedStorage.Shared.Util.Bin)
@@ -78,9 +79,9 @@ local function ItemTitleDisplay()
             return if data.type then formattedCleanType else nil
         end)
 
-        binAdd(RoundStateContainer.FusionUtil.StateHook(RoundStateContainer, currentProductData, "productData"))
-        binAdd(RoundStateContainer.FusionUtil.StateHook(RoundStateContainer, winnerName, "winnerName"))
-        binAdd(RoundStateContainer.FusionUtil.StateHook(RoundStateContainer, currentPhase, "phase"))
+        binAdd(roundStateContainer.FusionUtil.StateHook(roundStateContainer, currentProductData, "productData"))
+        binAdd(roundStateContainer.FusionUtil.StateHook(roundStateContainer, winnerName, "winnerName"))
+        binAdd(roundStateContainer.FusionUtil.StateHook(roundStateContainer, currentPhase, "phase"))
 
         local frame = Background {
             Parent = parent,

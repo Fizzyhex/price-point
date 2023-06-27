@@ -8,12 +8,13 @@ local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Value = Fusion.Value
 
-local ScoreStateContainer = require(ReplicatedStorage.Client.StateContainers.ScoreStateContainer)
-local GuessStateContainer = require(ReplicatedStorage.Client.StateContainers.GuessStateContainer)
+local StateContainers = require(ReplicatedStorage.Shared.StateContainers)
+local scoreStateContainer = StateContainers.scoreStateContainer
+local guessStateContainer = StateContainers.guessStateContainer
 local Blinder3D = require(ReplicatedStorage.Client.UI.Components.Blinder3D)
 local ScoreboardEntry = require(ReplicatedStorage.Client.UI.Components.ScoreboardEntry)
 local NetworkNamespaces = require(ReplicatedStorage.Shared.Constants.NetworkNamespaces)
-local RoundStateContainer = require(ReplicatedStorage.Client.StateContainers.RoundStateContainer)
+local roundStateContainer = StateContainers.roundStateContainer
 local ScoreboardChannel = require(ReplicatedStorage.Client.EventChannels.ScoreboardChannel)
 local Bin = require(ReplicatedStorage.Shared.Util.Bin)
 
@@ -64,7 +65,7 @@ local function Scoreboard()
         local blinders = {}
         local playerDataTable = {}
         local price = Value()
-        binAdd(RoundStateContainer.FusionUtil.StateHook(RoundStateContainer, price, "price"))
+        binAdd(roundStateContainer.FusionUtil.StateHook(roundStateContainer, price, "price"))
 
         for i = 1, 10 do
             local entry = entryPrefab:Clone()
@@ -86,7 +87,7 @@ local function Scoreboard()
 
         local function ReorderScoreboard()
             local index = 0
-            local scores = ScoreStateContainer:GetAll()
+            local scores = scoreStateContainer:GetAll()
             local lenBlinderDisplays = #TableUtil.Values(blinderDisplays)
             local isReordered = false
             print("Client scoreboard sees these scores:", scores)
@@ -136,8 +137,8 @@ local function Scoreboard()
             local guess = Value(nil)
             local isReady = Value(nil)
 
-            playerBinAdd(ScoreStateContainer.FusionUtil.StateHook(
-                ScoreStateContainer,
+            playerBinAdd(scoreStateContainer.FusionUtil.StateHook(
+                scoreStateContainer,
                 score,
                 key
             ))
@@ -165,7 +166,7 @@ local function Scoreboard()
             end
         end))
 
-        binAdd(ScoreStateContainer:Observe(function(_, newState)
+        binAdd(scoreStateContainer:Observe(function(_, newState)
             if isUninitialized and next(newState) then
                 ReorderScoreboard()
             end
@@ -173,7 +174,7 @@ local function Scoreboard()
 
         binAdd(OnServerScoreboardResort(ReorderScoreboard))
 
-        binAdd(GuessStateContainer:Observe(function(oldState, newState)
+        binAdd(guessStateContainer:Observe(function(oldState, newState)
             for userId, guess in newState do
                 if oldState[userId] == guess then
                     continue

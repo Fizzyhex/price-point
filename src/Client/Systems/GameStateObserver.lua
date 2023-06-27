@@ -1,11 +1,12 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local RoundStateContainer = require(ReplicatedStorage.Client.StateContainers.RoundStateContainer)
+local StateContainers = require(ReplicatedStorage.Shared.StateContainers)
+local roundStateContainer = StateContainers.roundStateContainer
 local GameStateChannel = require(ReplicatedStorage.Client.EventChannels.GameStateChannel)
 
 -- Observes game state and fires off `GameStateChannel` events
 local function GameStateObserver()
-    local stopObservingRoundState = RoundStateContainer:Observe(function(oldState, newState)
+    local stopObservingRoundState = roundStateContainer:Observe(function(oldState, newState)
         if oldState.phase == newState.phase then
             return
         end

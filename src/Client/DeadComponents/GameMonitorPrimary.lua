@@ -2,7 +2,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Component = require(ReplicatedStorage.Packages.Component)
 local Trove = require(ReplicatedStorage.Packages.Trove)
-local RoundStateContainer = require(ReplicatedStorage.Client.StateContainers.RoundStateContainer)
+local StateContainers = require(ReplicatedStorage.Shared.StateContainers)
+local roundStateContainer = StateContainers.roundStateContainer
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Value = Fusion.Value
@@ -22,8 +23,8 @@ local fusionGameState = {
 local logger = CreateLogger(script)
 
 for state, value in fusionGameState do
-    RoundStateContainer.FusionUtil.StateHook(
-        RoundStateContainer,
+    roundStateContainer.FusionUtil.StateHook(
+        roundStateContainer,
         value,
         state
     )

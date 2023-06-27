@@ -13,7 +13,8 @@ local Header = require(ReplicatedStorage.Client.UI.Components.Header)
 local Background = require(ReplicatedStorage.Client.UI.Components.Background)
 local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.ShorthandPadding)
 local ProductImageCard = require(ReplicatedStorage.Client.UI.Components.ProductImageCard)
-local RoundStateContainer = require(ReplicatedStorage.Client.StateContainers.RoundStateContainer)
+local StateContainers = require(ReplicatedStorage.Shared.StateContainers)
+local roundStateContainer = StateContainers.roundStateContainer
 local ImageScroller = require(ReplicatedStorage.Client.UI.Components.ImageScroller)
 
 local ANCESTORS = { workspace }
@@ -27,11 +28,11 @@ local function ProductIconDisplay()
             return if data then data.image else ""
         end)
 
-        local stopObservingRoundState = RoundStateContainer:Observe(function(_, newState)
+        local stopObservingRoundState = roundStateContainer:Observe(function(_, newState)
             isVisible:set(newState.phase ~= "Intermission" and newState.phase ~= "GameOver")
         end)
 
-        local roundStateHook = RoundStateContainer.FusionUtil.StateHook(RoundStateContainer, currentProductData, "productData")
+        local roundStateHook = roundStateContainer.FusionUtil.StateHook(roundStateContainer, currentProductData, "productData")
         local frame = New "CanvasGroup" {
             Name = "ProductIconDisplay",
             Parent = parent,

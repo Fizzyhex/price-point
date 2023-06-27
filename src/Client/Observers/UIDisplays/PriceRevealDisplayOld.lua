@@ -11,7 +11,8 @@ local Spring = Fusion.Spring
 local Tween = Fusion.Tween
 
 local ThemeProvider = require(ReplicatedStorage.Client.UI.Util.ThemeProvider)
-local RoundStateContainer = require(ReplicatedStorage.Client.StateContainers.RoundStateContainer)
+local StateContainers = require(ReplicatedStorage.Shared.StateContainers)
+local roundStateContainer = StateContainers.roundStateContainer
 local Promise = require(ReplicatedStorage.Packages.Promise)
 
 local Header = require(ReplicatedStorage.Client.UI.Components.Header)
@@ -163,7 +164,7 @@ local function PriceRevealDisplay()
             ui:set(newUi)
         end
 
-        local stopObservingRoundState = RoundStateContainer:Observe(function(oldState, newState)
+        local stopObservingRoundState = roundStateContainer:Observe(function(oldState, newState)
             if oldState.phase == newState.phase then
                 return
             end

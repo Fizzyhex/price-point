@@ -17,7 +17,8 @@ local Nest = require(ReplicatedStorage.Client.UI.Components.Nest)
 local HorizontalListLayout = require(ReplicatedStorage.Client.UI.Components.HorizontalListLayout)
 
 local TextFilters = require(ReplicatedStorage.Client.UI.Util.TextFilters)
-local RoundStateContainer = require(ReplicatedStorage.Client.StateContainers.RoundStateContainer)
+local StateContainers = require(ReplicatedStorage.Shared.StateContainers)
+local roundStateContainer = StateContainers.roundStateContainer
 
 local NetworkNamespaces = require(ReplicatedStorage.Shared.Constants.NetworkNamespaces)
 local SoundUtil = require(ReplicatedStorage.Shared.Util.SoundUtil)
@@ -83,7 +84,7 @@ local function GuessingUIController()
         end
     end
 
-    RoundStateContainer:Observe(function(oldState, newState)
+    roundStateContainer:Observe(function(oldState, newState)
         if oldState.guessingEnabled == newState.guessingEnabled then
             return
         end

@@ -1,9 +1,11 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Observers = require(ReplicatedStorage.Packages.Observers)
-local RoundStateContainer = require(ReplicatedStorage.Client.StateContainers.RoundStateContainer)
+local StateContainers = require(ReplicatedStorage.Shared.StateContainers)
+local roundStateContainer = StateContainers.roundStateContainer
 local ImageScroller = require(ReplicatedStorage.Client.UI.Components.ImageScroller)
+
+local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local New = Fusion.New
 local Value = Fusion.Value
 local Spring = Fusion.Spring
@@ -15,7 +17,7 @@ local ANCESTORS = { workspace }
 local function IntermissionScroller()
     Observers.observeTag("IntermissionScroller", function(parent: Instance)
         local isVisible = Value(false)
-        local stopObservingRoundState = RoundStateContainer:Observe(function(_, newState)
+        local stopObservingRoundState = roundStateContainer:Observe(function(_, newState)
             isVisible:set(newState.phase == "Intermission")
         end)
 

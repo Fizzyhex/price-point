@@ -14,8 +14,8 @@ function PropsUtil.PatchProps(oldProps, newProps)
     for key, value in newProps do
         if value == PropsUtil.NIL then
             result[key] = nil
-        elseif key == Fusion.Children and typeof(value) == "table" then
-            for key2, value2 in value do
+        elseif key == Fusion.Children and typeof(value) == "table" and result[key] then
+            for _, value2 in value do
                 table.insert(result[key], value2)
             end
         else

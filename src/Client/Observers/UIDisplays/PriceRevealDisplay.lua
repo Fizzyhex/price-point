@@ -3,7 +3,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Observers = require(ReplicatedStorage.Packages.Observers)
 
 local PriceReveal = require(ReplicatedStorage.Client.UI.Components.PriceReveal)
-local RoundStateContainer = require(ReplicatedStorage.Client.StateContainers.RoundStateContainer)
+local StateContainers = require(ReplicatedStorage.Shared.StateContainers)
+local roundStateContainer = StateContainers.roundStateContainer
 local Signal = require(ReplicatedStorage.Packages.Signal)
 local Bin = require(ReplicatedStorage.Shared.Util.Bin)
 local GameStateChannel = require(ReplicatedStorage.Client.EventChannels.GameStateChannel)
@@ -18,7 +19,7 @@ local function PriceRevealDisplay()
         local onFinalPriceRevealed = Signal.new()
         local isAnimationRunning = false
 
-        binAdd(RoundStateContainer:Observe(function(oldState, newState)
+        binAdd(roundStateContainer:Observe(function(oldState, newState)
             if newState.price and newState.phase == "PriceReveal" and isAnimationRunning == false then
                 isAnimationRunning = true
                 playEvent:Fire(newState.price)

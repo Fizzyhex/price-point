@@ -12,12 +12,13 @@ local Computed = Fusion.Computed
 local Spring = Fusion.Spring
 
 local Background = require(ReplicatedStorage.Client.UI.Components.Background)
-local RoundStateContainer = require(ReplicatedStorage.Client.StateContainers.RoundStateContainer)
+local StateContainers = require(ReplicatedStorage.Shared.StateContainers)
+local roundStateContainer = StateContainers.roundStateContainer
 local Timer = require(ReplicatedStorage.Client.UI.Components.Timer)
 local Label = require(ReplicatedStorage.Client.UI.Components.Label)
 local Unwrap = require(ReplicatedStorage.Client.UI.Util.Unwrap)
 local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.ShorthandPadding)
-local MatchStateContainer = require(ReplicatedStorage.Client.StateContainers.MatchStateContainer)
+local matchStateContainer = StateContainers.matchStateContainer
 
 local gameRules = ReplicatedStorage.Assets.Configuration.GameRules
 
@@ -56,10 +57,10 @@ local function RoundInfoDisplay()
         timeRemaining:set(math.max(roundTimerDuration:get() - elapsed, 0))
     end)
 
-    RoundStateContainer.FusionUtil.StateHook(RoundStateContainer, roundTimerStart, "roundTimer")
-    RoundStateContainer.FusionUtil.StateHook(RoundStateContainer, roundTimerDuration, "roundDuration")
-    RoundStateContainer.FusionUtil.StateHook(RoundStateContainer, roundsRemaining, "roundsRemaining")
-    MatchStateContainer.FusionUtil.StateHook(MatchStateContainer, mode, "mode")
+    roundStateContainer.FusionUtil.StateHook(roundStateContainer, roundTimerStart, "roundTimer")
+    roundStateContainer.FusionUtil.StateHook(roundStateContainer, roundTimerDuration, "roundDuration")
+    roundStateContainer.FusionUtil.StateHook(roundStateContainer, roundsRemaining, "roundsRemaining")
+    matchStateContainer.FusionUtil.StateHook(matchStateContainer, mode, "mode")
 
     return Observers.observeTag("RoundInfoDisplay", function(parent: Instance)
         local ui = Background {
