@@ -11,7 +11,7 @@ local PlayerGuessRecorder = require(ServerStorage.Server.PlayerGuessRecorder)
 local GameStates = require(ServerStorage.Server.GameStates)
 local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
 local Red = require(ReplicatedStorage.Packages.Red)
-local BasicStateContainer = require(ReplicatedStorage.Shared.BasicStateContainer)
+local StateContainers = require(ReplicatedStorage.Shared.StateContainers)
 
 local gameRules = ReplicatedStorage.Assets.Configuration.GameRules
 local logger = CreateLogger(script)
@@ -233,13 +233,13 @@ function GameStateMachine:Destroy()
     self._itemDisplaySetter:Destroy()
 end
 
-function GameStateMachine.new(stateContainers: {typeof(BasicStateContainer.new())}, productPools)
+function GameStateMachine.new(productPools)
     local self = setmetatable({}, GameStateMachine)
-    self._roundStateContainer = stateContainers.roundStateContainer
-    self._scoreStateContainer = stateContainers.scoreStateContainer
-    self._guessStateContainer = stateContainers.guessStateContainer
-    self._productFeedStateContainer = stateContainers.productFeedStateContainer
-    self._matchStateContainer = stateContainers.matchStateContainer
+    self._roundStateContainer = StateContainers.roundStateContainer
+    self._scoreStateContainer = StateContainers.scoreStateContainer
+    self._guessStateContainer = StateContainers.guessStateContainer
+    self._productFeedStateContainer = StateContainers.productFeedStateContainer
+    self._matchStateContainer = StateContainers.matchStateContainer
     self._productPools = productPools
     self._roundsRemaining = assert(gameRules:GetAttribute("rounds"), "'rounds' game rule is not set")
     self._guesses = {}

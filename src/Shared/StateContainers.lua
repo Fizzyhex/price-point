@@ -15,7 +15,7 @@ local function Setup(namespace: string, defaultState: {}?)
         return StateReceiver(namespace)
     else
         local stateContainer = BasicStateContainer.new(defaultState)
-        StateReplicator(stateContainer)
+        StateReplicator(namespace, stateContainer)
         return stateContainer
     end
 end

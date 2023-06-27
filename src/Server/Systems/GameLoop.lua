@@ -5,19 +5,10 @@ local BasicStateContainer = require(ReplicatedStorage.Shared.BasicStateContainer
 local AvatarShopData = require(ServerStorage.Server.AvatarShopData)
 local RandomPool = require(ReplicatedStorage.Shared.RandomPool)
 local StateReplicator = require(ServerStorage.Server.StateReplicator)
-local NetworkNamespaces = require(ReplicatedStorage.Shared.Constants.NetworkNamespaces)
 local CreateLogger = require(ReplicatedStorage.Shared.CreateLogger)
 local GameStateMachine = require(ServerStorage.Server.GameStateMachine)
 
 local logger = CreateLogger(script)
-
-local STATE_CONTAINER_NAMESPACES = {
-    roundStateContainer = NetworkNamespaces.ROUND_STATE_CONTAINER,
-    productFeedStateContainer = NetworkNamespaces.PRODUCT_FEED_STATE_CONTAINER,
-    scoreStateContainer = NetworkNamespaces.SCORE_STATE_CONTAINER,
-    guessStateContainer = NetworkNamespaces.GUESS_STATE_CONTAINER,
-    matchStateContainer = NetworkNamespaces.MATCH_STATE_CONTAINER
-}
 
 local USE_TEST_PRODUCTS = false
 local TEST_PRODUCTS = {
@@ -83,13 +74,6 @@ local GameLoop = {}
 function GameLoop:OnStart()
     logger.print("Starting game state machine...")
     local productPools = MakeProductPools()
-    local stateContainers = {}
-
-    for key, networkNamespace in STATE_CONTAINER_NAMESPACES do
-        local stateContainer = BasicStateContainer.new()
-        stateContainers[key] = stateContainer
-        StateReplicator(networkNamespace, stateContainer)
-    end
 
     if USE_TEST_PRODUCTS then
         logger.warn("Test products are being used.")
@@ -100,7 +84,6 @@ function GameLoop:OnStart()
     local function RunGame()
         logger.print("Running game")
         return GameStateMachine.new(
-            stateContainers,
             productPools
         ):Start(function()
             logger.print("Starting a new game")
