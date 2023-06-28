@@ -1,165 +1,251 @@
+local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local AvatarEditorService = game:GetService("AvatarEditorService")
 local RunService = game:GetService("RunService")
 
 local Observers = require(ReplicatedStorage.Packages.Observers)
-
-local Fusion = require(ReplicatedStorage.Packages.Fusion)
-local Value = Fusion.Value
-local Children = Fusion.Children
-
 local StateContainers = require(ReplicatedStorage.Shared.StateContainers)
 local productFeedStateContainer = StateContainers.productFeedStateContainer
-local AvatarItemFeed = require(ReplicatedStorage.Client.UI.Components.AvatarItemFeed)
+
 local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
+
+local Background = require(ReplicatedStorage.Client.UI.Components.Background)
+local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.ShorthandPadding)
+local VerticalListLayout = require(ReplicatedStorage.Client.UI.Components.VerticalListLayout)
+local AvatarItemCard = require(ReplicatedStorage.Client.UI.Components.AvatarItemCard)
+local ScrollFrame = require(ReplicatedStorage.Client.UI.Components.ScrollFrame)
+
+local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Red = require(ReplicatedStorage.Packages.Red)
 local NetworkNamespaces = require(ReplicatedStorage.Shared.Constants.NetworkNamespaces)
-local Nest = require(ReplicatedStorage.Client.UI.Components.Nest)
-local Bin = require(ReplicatedStorage.Shared.Util.Bin)
+local CreateLogger = require(ReplicatedStorage.Shared.CreateLogger)
 local Label = require(ReplicatedStorage.Client.UI.Components.Label)
-local VerticalListLayout = require(ReplicatedStorage.Client.UI.Components.VerticalListLayout)
+local Nest = require(ReplicatedStorage.Client.UI.Components.Nest)
+local Header = require(ReplicatedStorage.Client.UI.Components.Header)
+local Value = Fusion.Value
+local Children = Fusion.Children
+local Computed = Fusion.Computed
+local ForPairs = Fusion.ForPairs
 
-local ANCESTORS = { workspace }
-local TAG = "ProductFeedDisplay"
 local LOCAL_PLAYER = Players.LocalPlayer
-local USE_RED_HACK = true
-local ADD_TEST_ITEMS = RunService:IsStudio()
-local MAX_PRODUCTS = 100
+local ENABLE_STUDIO_TEST_ITEMS = false
+
+local logger = CreateLogger(script)
 
 local function ProductFeedDisplay()
-    local products = Value({})
+    local history = Value({})
     local avatarNetwork = Red.Client(NetworkNamespaces.AVATAR)
 
+    local function GetInfo(id, type)
+        local value = Value({})
+
+        task.spawn(function()
+            value:set(AvatarEditorService:GetItemDetails(id, type))
+        end)
+
+        return value
+    end
+
+    MarketplaceService.PromptBundlePurchaseFinished:Connect(function(purchaser, bundleId, wasPurchased)
+        if not wasPurchased then
+            return
+        end
+
+        for _, value in history:get() do
+            if tostring(value.id) == tostring(bundleId) and value.type == Enum.AvatarItemType.Bundle then
+                local newInfo = value.info:get()
+                newInfo.Owned = true
+                value.info:set(newInfo)
+            end
+        end
+    end)
+
+    MarketplaceService.PromptPurchaseFinished:Connect(function(purchaser, assetId, wasPurchased)
+        if not wasPurchased then
+            return
+        end
+
+        for _, value in history:get() do
+            if tostring(value.id) == tostring(assetId) and value.type == Enum.AvatarItemType.Asset then
+                local newInfo = value.info:get()
+                newInfo.Owned = true
+                value.info:set(newInfo)
+            end
+        end
+    end)
+
     productFeedStateContainer:Observe(function(_, newState)
-        local currentProductData = products:get()
-        local newProductData = {}
+        local newHistory = {}
 
-        for _, productData in newState do
-            local isNew = true
+        for _, data in newState do
+            local isInHistory = false
 
-            for _, product in currentProductData do
-                if product.id == productData.id then
-                    isNew = false
+            for _, queued in history:get() do
+                if queued.id == data.id and queued.type == data.type then
+                    isInHistory = true
                     break
                 end
             end
 
-            if isNew then
-                table.insert(newProductData, productData)
-            end
-        end
-
-        if #newProductData > 0 then
-            local data = TableUtil.Extend(currentProductData, newProductData)
-
-            if MAX_PRODUCTS > 0 then
-                while #data > MAX_PRODUCTS do
-                    table.remove(data, 1)
-                end
+            if isInHistory then
+                continue
             end
 
-            products:set(data)
+            table.insert(newHistory, {
+                id = data.id,
+                type = data.type,
+                lastClick = Value(),
+                isEquipped = Value(false),
+                info = GetInfo(data.id, data.type)
+            })
         end
+
+        history:set(TableUtil.Extend(history:get(), newHistory))
     end)
 
-    local function EquipItem(itemId: number, assetType: string, successCallback: () -> ())
-        print("Sent equip", itemId, assetType, successCallback)
-
-        if USE_RED_HACK then
-            local humanoid = LOCAL_PLAYER.Character and LOCAL_PLAYER.Character:FindFirstChildWhichIsA("Humanoid")
-            avatarNetwork:Fire("Equip", itemId, assetType)
-            local connectionBinAdd, connectionBinEmpty = Bin()
-            local currentDescription = humanoid:GetAppliedDescription()
-
-            local function PromptSave(humanoidDescription: HumanoidDescription)
-                print("Prompt to save avi")
-                connectionBinEmpty()
-
-                if not humanoidDescription then
-                    return
-                end
-
-                AvatarEditorService:PromptSaveAvatar(humanoidDescription, humanoid.RigType)
-            end
-
-            if currentDescription then
-                connectionBinAdd(currentDescription.Changed:Connect(function(change)
-                    if change == "Parent" then
-                        return
-                    end
-
-                    PromptSave()
-                end))
-            end
-
-            -- For some ungodly reason, Roblox will likely destroy the current HumanoidDescription and replace
-            -- it with a new one when we re-apply the description.
-            humanoid.ChildAdded:Connect(function(child: Instance)
-                if child:IsA("HumanoidDescription") then
-                    PromptSave(child)
-                end
-            end)
-
-            task.delay(8, connectionBinEmpty)
-        else
-            avatarNetwork:Call("Equip", itemId, assetType):Then(function(ok: boolean)
-                if ok then
-                    local humanoid = LOCAL_PLAYER.Character and LOCAL_PLAYER.Character:FindFirstChildWhichIsA("Humanoid")
-                    local description = humanoid and humanoid:GetAppliedDescription()
-                    AvatarEditorService:PromptSaveAvatar(description, humanoid.RigType)
-
-                    if successCallback then
-                        successCallback()
-                    end
-                else
-                    warn("Server failed to equip item")
-                end
-            end)
-        end
-    end
-
-    local function UnequipItem(itemId: number, assetType: string, successCallback)
-        avatarNetwork:Call("Unequip", itemId, assetType):Then(function(ok: boolean)
-            if ok then
-                local humanoid = LOCAL_PLAYER.Character and LOCAL_PLAYER.Character:FindFirstChildWhichIsA("Humanoid")
-                local description = humanoid and humanoid:GetAppliedDescription()
-                AvatarEditorService:PromptSaveAvatar(description, humanoid.RigType)
-
-                if successCallback then
-                    successCallback()
-                end
-            else
-                warn("Server failed to equip item")
-            end
-        end)
-    end
-
-    if ADD_TEST_ITEMS then
+    if ENABLE_STUDIO_TEST_ITEMS and RunService:IsStudio() then
         productFeedStateContainer:Patch({
-            [1] = {id = 9490601996, type = Enum.AvatarItemType.Asset},
-            [2] = {id = 496, type = Enum.AvatarItemType.Bundle}
+            {id = 9490601996, type = Enum.AvatarItemType.Asset},
+            {id = 496, type = Enum.AvatarItemType.Bundle},
+            {id = 161, type = Enum.AvatarItemType.Bundle}
         })
     end
 
-    Observers.observeTag(TAG, function(target: Instance)
-        local ui = Nest {
-            Parent = target,
+    local function AvatarUpdateCallback(worked: boolean)
+        if not worked then
+            logger.warn(`Failed to equip avatar item: server returned {worked}`)
+            return
+        end
+
+        local humanoid = LOCAL_PLAYER.Character and LOCAL_PLAYER.Character:FindFirstChildWhichIsA("Humanoid")
+        local description = humanoid and humanoid:GetAppliedDescription()
+        AvatarEditorService:PromptSaveAvatar(description, humanoid.RigType)
+    end
+
+    Observers.observeTag("ProductFeedDisplay", function(parent: Instance)
+        local ui = Background {
+            Name = "ProductFeedDisplay",
+            Parent = parent,
 
             [Children] = {
-                AvatarItemFeed {
-                    Products = products,
-                    EquipCallback = EquipItem,
-                    UnequipCallback = UnequipItem
+                Nest {
+                    Name = "PaddedContent",
+                    ZIndex = 2,
+
+                    [Children] = {
+                        Header {
+                            Name = "EmptyLabel",
+                            Size = UDim2.fromScale(1, 0),
+                            AutomaticSize = Enum.AutomaticSize.Y,
+                            TextWrapped = true,
+                            Text = "Empty... but any new marketplace items will appear here after their prices are guessed!",
+                            ZIndex = 2,
+                            Visible = Computed(function()
+                                return #history:get() == 0
+                            end)
+                        },
+
+                        ShorthandPadding { Padding = UDim.new(0, 8) }
+                    }
+                },
+
+                ScrollFrame {
+                    Size = UDim2.fromScale(1, 1),
+                    CanvasSize = UDim2.fromScale(1, 0),
+                    AutomaticSize = Enum.AutomaticSize.Y,
+
+                    [Children] = {
+                        ForPairs(history, function(index, data)
+                            local info = data.info
+                            local isEquipped = data.isEquipped
+                            local lastClick = data.lastClick
+                            local action = Computed(function()
+                                if info:get().Owned then
+                                    if info:get().BundleType then
+                                        return "wear"
+                                    else
+                                        return if isEquipped:get() then "unequip" else "equip"
+                                    end
+                                elseif info:get().IsPurchasable == false then
+                                    return "off-sale"
+                                else
+                                    return "purchase"
+                                end
+                            end)
+
+                            return index, AvatarItemCard {
+                                LayoutOrder = -index,
+                                Size = UDim2.fromScale(1, 0),
+
+                                Name = Computed(function()
+                                    return info:get().Name or "???"
+                                end),
+
+                                Price = Computed(function()
+                                    local lowestPrice = info:get().LowestPrice
+                                    local price = info:get().Price or 0
+                                    return if lowestPrice ~= nil and lowestPrice > 0 then lowestPrice else price
+                                end),
+
+                                Image = Computed(function()
+                                    if data.type == Enum.AvatarItemType.Bundle then
+                                        return `rbxthumb://type=BundleThumbnail&id={data.id}&w=150&h=150`
+                                    else
+                                        return `rbxthumb://type=Asset&id={data.id}&w=150&h=150`
+                                    end
+                                end),
+
+                                OnActionClicked = function()
+                                    if lastClick:get() and tick() - lastClick:get() < 0.3 then
+                                        return false
+                                    end
+
+                                    lastClick:set(tick())
+
+                                    if action:get() == "purchase" then
+                                        if data.type == Enum.AvatarItemType.Bundle then
+                                            MarketplaceService:PromptBundlePurchase(LOCAL_PLAYER, data.id)
+                                        else
+                                            MarketplaceService:PromptPurchase(LOCAL_PLAYER, data.id)
+                                        end
+                                    elseif action:get() == "equip" or action:get() == "wear" then
+                                        avatarNetwork
+                                        :Call("Equip", data.id, info:get().AssetType, info:get().BundleType)
+                                        :Then(function(worked)
+                                            if worked then
+                                                isEquipped:set(true)
+                                            end
+
+                                            AvatarUpdateCallback(worked)
+                                        end)
+                                    elseif action:get() == "unequip" then
+                                        avatarNetwork
+                                        :Call("Unequip", data.id, info:get().AssetType, info:get().BundleType)
+                                        :Then(function(worked)
+                                            if worked then
+                                                isEquipped:set(false)
+                                            end
+
+                                            AvatarUpdateCallback(worked)
+                                        end)
+                                    end
+                                end,
+
+                                Action = action
+                            }
+                        end, Fusion.cleanup),
+                        ShorthandPadding { Padding = UDim.new(0, 8) },
+                        VerticalListLayout { Padding = UDim.new(0, 8) },
+                    }
                 },
             }
         }
 
         return function()
-            -- omg it's just like horacekat
             ui:Destroy()
         end
-    end, ANCESTORS)
+    end, { workspace })
 end
 
 return ProductFeedDisplay

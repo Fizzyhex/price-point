@@ -1,6 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
-local Children = Fusion.Children
 
 local PropsUtil = {}
 PropsUtil.NIL = newproxy()

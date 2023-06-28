@@ -14,7 +14,7 @@ local Computed = Fusion.Computed
 
 local STRIPPED_PROPS = { "Icon", "Label" }
 
--- Creates a wrapper with an icon that automatically matches the height of the `TextLabel`
+-- Creates a wrapper with an `Icon` that automatically matches the height of the `Label`
 local function IconContainer(props)
     local icon = props.Icon
     local label = props.Label

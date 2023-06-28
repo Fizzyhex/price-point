@@ -3,10 +3,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local New = Fusion.New
 local Children = Fusion.Children
-local Hydrate = Fusion.Hydrate
 local OnEvent = Fusion.OnEvent
 local Computed = Fusion.Computed
-local Spring = Fusion.Spring
 
 local ThemeProvider = require(ReplicatedStorage.Client.UI.Util.ThemeProvider)
 local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.ShorthandPadding)
@@ -18,6 +16,7 @@ local TEXT_PADDING = UDim.new(0, 12)
 
 local function Button(props)
     local isActive = props.IsActive
+    local onClick = props.OnClick
 
     local clickSound: Sound
     local buttonProps = {
@@ -33,8 +32,8 @@ local function Button(props)
         [OnEvent "MouseButton1Click"] = function()
             clickSound:Play()
 
-            if props.OnClick then
-                props.OnClick()
+            if onClick then
+                onClick()
             end
         end,
 
@@ -75,7 +74,12 @@ local function Button(props)
         },
     }
 
-    local textButton = New("TextButton")(PropsUtil.PatchProps(buttonProps, PropsUtil.StripProps(props, STRIPPED_PROPS)))
+    local textButton = New("TextButton")(
+        PropsUtil.PatchProps(
+            buttonProps,
+            PropsUtil.StripProps(props, STRIPPED_PROPS)
+        )
+    )
 
     clickSound = New "Sound" {
         Name = "ClickSound",

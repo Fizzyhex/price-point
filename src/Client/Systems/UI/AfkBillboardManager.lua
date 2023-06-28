@@ -58,7 +58,7 @@ local function AfkBillboardManager()
         billboard.Adornee = character
         billboard.Enabled = true
 
-        local stopObservingAttribute = Observers.observeAttribute(player, "IsAfk", function(value)
+        local stopObservingAttribute = Observers.observeAttribute(player, "isAfk", function(value)
             billboardScales[player]:set(if value == true then 1 else 0)
         end)
 

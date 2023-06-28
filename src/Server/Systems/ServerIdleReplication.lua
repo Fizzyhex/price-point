@@ -9,7 +9,7 @@ local function ServerIdleReplication()
 
     network:On("Afk", function(player: Player, isAfk: boolean)
         isAfk = (isAfk == true)
-        player:SetAttribute("IsAfk", isAfk)
+        player:SetAttribute("isAfk", isAfk)
     end)
 end
 

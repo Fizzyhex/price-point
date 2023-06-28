@@ -5,7 +5,7 @@ local THEME_COLORS = {
     },
 
     primary = {
-        light = Color3.fromRGB(0, 0, 0),
+        light = Color3.fromRGB(196, 196, 196),
         dark = Color3.fromRGB(255, 255, 255)
     },
 
