@@ -10,7 +10,6 @@ local Spring = Fusion.Spring
 
 local ThemeProvider = require(ReplicatedStorage.Client.UI.Util.ThemeProvider)
 local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.ShorthandPadding)
-local StripProps = require(ReplicatedStorage.Client.UI.Util.StripProps)
 local Unwrap = require(ReplicatedStorage.Client.UI.Util.Unwrap)
 local PropsUtil = require(ReplicatedStorage.Client.UI.Util.PropsUtil)
 

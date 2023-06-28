@@ -16,6 +16,7 @@ local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.Shorthan
 local Nest = require(ReplicatedStorage.Client.UI.Components.Nest)
 local Unwrap = require(ReplicatedStorage.Client.UI.Util.Unwrap)
 local ThemeProvider = require(ReplicatedStorage.Client.UI.Util.ThemeProvider)
+local CreateLogger = require(ReplicatedStorage.Shared.CreateLogger)
 local Children = Fusion.Children
 local ForPairs = Fusion.ForPairs
 local ForValues = Fusion.ForValues
@@ -25,10 +26,13 @@ local Cleanup = Fusion.Cleanup
 local New = Fusion.New
 local Computed = Fusion.Computed
 
+local DONT_USE_BATCH = true
 local SUPPORTED_ITEM_TYPES = {
     Enum.AvatarItemType.Asset,
     Enum.AvatarItemType.Bundle
 }
+
+local logger = CreateLogger(script)
 
 local function ProductTypeFilter(products, supportedType: Enum.AvatarItemType)
     return ForValues(products, function(product)
@@ -41,6 +45,29 @@ local function ProductTypeFilter(products, supportedType: Enum.AvatarItemType)
         end
 
     end, Fusion.doNothing)
+end
+
+local function GetBatchItemDetails(ids: {number}, avatarItemType: Enum.AvatarItemType)
+    if DONT_USE_BATCH then
+        local batch = {}
+
+        for _, id in ids do
+            local ok, result = pcall(function()
+                return AvatarEditorService:GetItemDetails(id, avatarItemType)
+            end)
+
+            if ok then
+                table.insert(batch, result)
+            else
+                logger.warn(`Failed to get item details for {id}: {result}`)
+                table.insert(batch, {})
+            end
+        end
+
+        return batch
+    else
+        return AvatarEditorService:GetBatchItemDetails(ids, avatarItemType)
+    end
 end
 
 local function ProductDetailsCache(products, avatarItemType: Enum.AvatarItemType)
@@ -91,7 +118,7 @@ local function ProductDetailsCache(products, avatarItemType: Enum.AvatarItemType
             return
         end
 
-        local itemDetailsBatch = AvatarEditorService:GetBatchItemDetails(payload, avatarItemType)
+        local itemDetailsBatch = GetBatchItemDetails(payload, avatarItemType)
 
         for index, itemDetails in itemDetailsBatch do
             itemDetails.InjectedType = avatarItemType

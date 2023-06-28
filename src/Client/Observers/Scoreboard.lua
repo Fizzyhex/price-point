@@ -18,6 +18,7 @@ local roundStateContainer = StateContainers.roundStateContainer
 local ScoreboardChannel = require(ReplicatedStorage.Client.EventChannels.ScoreboardChannel)
 local Bin = require(ReplicatedStorage.Shared.Util.Bin)
 
+local SCOREBOARD_ENTRY_COUNT = 12
 local ANCESTORS = { workspace }
 
 local function OrderedScoreIterator(scores: table, iteratorFn: (key: any, value: any) -> ())
@@ -67,7 +68,7 @@ local function Scoreboard()
         local price = Value()
         binAdd(roundStateContainer.FusionUtil.StateHook(roundStateContainer, price, "price"))
 
-        for i = 1, 10 do
+        for i = 1, SCOREBOARD_ENTRY_COUNT do
             local entry = entryPrefab:Clone()
             entry.Name = `ScoreboardEntryPart ({i})`
             local entryOffset = i - 1

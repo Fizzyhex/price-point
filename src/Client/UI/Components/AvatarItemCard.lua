@@ -34,6 +34,9 @@ local STRIPPED_PROPS = {
     "UnequipCallback"
 }
 
+-- this entire component is awful
+--
+-- i will not be refactoring it
 local function AvatarItemCard(props)
     local id = Value(Unwrap(props.Id))
     local avatarItemType = props.AvatarItemType
@@ -54,7 +57,8 @@ local function AvatarItemCard(props)
 
     local isPurchasable = Computed(function()
         if itemDetails:get() then
-            return itemDetails:get().IsPurchasable
+            -- IsPurchasable may also be nil (???)
+            return itemDetails:get().IsPurchasable ~= false
         else
             return true
         end

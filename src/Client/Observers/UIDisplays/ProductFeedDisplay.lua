@@ -17,6 +17,8 @@ local Red = require(ReplicatedStorage.Packages.Red)
 local NetworkNamespaces = require(ReplicatedStorage.Shared.Constants.NetworkNamespaces)
 local Nest = require(ReplicatedStorage.Client.UI.Components.Nest)
 local Bin = require(ReplicatedStorage.Shared.Util.Bin)
+local Label = require(ReplicatedStorage.Client.UI.Components.Label)
+local VerticalListLayout = require(ReplicatedStorage.Client.UI.Components.VerticalListLayout)
 
 local ANCESTORS = { workspace }
 local TAG = "ProductFeedDisplay"
@@ -149,7 +151,7 @@ local function ProductFeedDisplay()
                     Products = products,
                     EquipCallback = EquipItem,
                     UnequipCallback = UnequipItem
-                }
+                },
             }
         }
 
