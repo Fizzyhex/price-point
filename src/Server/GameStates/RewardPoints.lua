@@ -48,8 +48,7 @@ local function RewardPoints(system)
     return Promise.new(function(resolve)
         local finalGuesses = system:GetGuesses()
         local scoreStateContainer = system:GetScoreStateContainer()
-        local currentProduct = system:GetCurrentProduct()
-        local price = currentProduct.PriceInRobux or currentProduct.Price or currentProduct.Robux or 0
+        local price = system:GetCurrentProductPrice()
         local waitTime = 0.5
         local playbackSpeed = 1
         logger.print("Old scores:", scoreStateContainer:GetAll())
@@ -83,7 +82,8 @@ local function RewardPoints(system)
                     continue
                 end
 
-                local reward = 100 * PercentageDistance(guess, price)
+                -- Adding 50 prevents against us from awarding 0 points when the price is 0
+                local reward = 100 * PercentageDistance(guess + 50, price + 50)
 
                 -- Prevent against NaN errors, as we have the potential to divide by zero here
                 if reward ~= reward then

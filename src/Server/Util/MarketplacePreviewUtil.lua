@@ -22,6 +22,14 @@ local function RecursivelyAnchor(subject: Instance)
     end
 end
 
+local function RecursivelyDestroyForces(subject: Instance)
+    for _, child in subject:GetDescendants() do
+        if child:IsA("Constraint") or child:IsA("BodyForce") then
+            child:Destroy()
+        end
+    end
+end
+
 local function RecursivelyDisableScripts(subject: Instance)
     if subject:IsA("Script") or subject:IsA("LocalScript") then
         subject.Enabled = false
@@ -173,6 +181,7 @@ end
 
 function MarketplacePreviewUtil.CreateAssetPreview(asset: Instance)
     RecursivelyDisableScripts(asset)
+    RecursivelyDestroyForces(asset)
 
     if asset:IsA("Decal") or asset:IsA("Texture") then
         if asset.Name == "face" or DISPLAY_ALL_DECALS_AS_FACES then

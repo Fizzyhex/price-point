@@ -24,17 +24,11 @@ local function PriceGuessing(system)
         local guessTime = system:GetGuessingTime()
         local productData = system:PickNextProduct()
         local id = productData.Id or productData.AssetId
-        local assetType: EnumItem? = AssetTypeIdToEnum(productData.AssetTypeId)
-        local assetTypeName = if assetType then assetType.Name else nil
         local receivedGuesses = 0
         local isResolved = false
         local timerThread
 
         ServerGameStateChannel.RaiseNewRound()
-
-        if productData.BundleType then
-            assetTypeName = "Bundle"
-        end
 
         local imageUri =
             if productData.BundleType then `rbxthumb://type=BundleThumbnail&id={id}&w=420&h=420`
@@ -44,7 +38,7 @@ local function PriceGuessing(system)
         local productDataPayload = {
             image = imageUri,
             name = productData.Name,
-            type = assetTypeName,
+            type = productData.AssetType,
         }
 
         if productData.Created then
@@ -65,11 +59,10 @@ local function PriceGuessing(system)
             local preview =
                 if productData.BundleType
                 then MarketplacePreviewUtil.CreateBundlePreviewFromId(id)
-                elseif productData.AssetId then MarketplacePreviewUtil.CreateAssetPreviewFromId(id)
-                else nil
+                else MarketplacePreviewUtil.CreateAssetPreviewFromId(id)
 
             if preview then
-                ItemModelChannel.RaiseItemChanged(preview, assetType)
+                ItemModelChannel.RaiseItemChanged(preview, AssetTypeIdToEnum(productData.AssetType))
             end
         end)
 

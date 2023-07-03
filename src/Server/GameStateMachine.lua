@@ -2,6 +2,7 @@ local CollectionService = game:GetService("CollectionService")
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local AvatarEditorService = game:GetService("AvatarEditorService")
 local ServerStorage = game:GetService("ServerStorage")
 
 local NetworkNamespaces = require(ReplicatedStorage.Shared.Constants.NetworkNamespaces)
@@ -161,21 +162,43 @@ function GameStateMachine:_GetRandomProduct(categories: table?)
 
     local randomCategory = categories[RANDOM:NextInteger(1, #categories)]
     local productData = self._productPools[randomCategory]:Pop()
-    local infoType = if productData.itemType == "Bundle" then Enum.InfoType.Bundle else Enum.InfoType.Asset
+    local infoType = if productData.itemType == "Bundle" then "Bundle" else "Asset"
+    local itemDetails
+    local marketplaceInfo
 
-    local ok, marketplaceInfo = pcall(function()
-        return MarketplaceService:GetProductInfo(productData.id, infoType)
-    end)
+    do
+        local ok
+        ok, itemDetails = pcall(function()
+            return AvatarEditorService:GetItemDetails(productData.id, infoType)
+        end)
 
-    if not ok then
-        logger.warn(`Failed to fetch marketplace info for {productData.id}: {marketplaceInfo}, trying again shortly`)
-        task.wait(0.5)
-        return self:_GetRandomProduct(categories)
+        if not ok then
+            logger.warn(`Failed to fetch item details for {productData.id}: {itemDetails}, trying again shortly`)
+            task.wait(0.5)
+            return self:_GetRandomProduct(categories)
+        end
     end
 
-    -- Use the cached price if it's not provided within the MarketplaceInfo (e.g for bundles) (why)
-    marketplaceInfo.PriceInRobux = marketplaceInfo.PriceInRobux or productData.price
-    return marketplaceInfo
+    do
+        local ok
+        ok, marketplaceInfo = pcall(function()
+            return MarketplaceService:GetProductInfo(productData.id, infoType)
+        end)
+
+        if not ok then
+            logger.warn(`Failed to fetch marketplace info for {productData.id}: {itemDetails}, trying again shortly`)
+            task.wait(0.5)
+            return self:_GetRandomProduct(categories)
+        end
+    end
+
+    itemDetails.Created = marketplaceInfo.Created
+    return itemDetails
+end
+
+function GameStateMachine:GetCurrentProductPrice()
+    local info = self:GetCurrentProduct()
+    return info.LowestPrice or info.Price or 0
 end
 
 function GameStateMachine:PickMatchCategories()

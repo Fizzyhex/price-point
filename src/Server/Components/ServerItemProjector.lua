@@ -212,6 +212,7 @@ function ServerItemProjector:SetModel(projection: BasePart | Model, humanoidDesc
         local animator = GetProjectionAnimator(projection)
 
         if animator then
+            projection:SetAttribute("DontRotate", true)
             LoadProjectionAnimation(animator, animation):Play()
         end
     end

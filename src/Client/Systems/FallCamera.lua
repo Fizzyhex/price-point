@@ -13,13 +13,15 @@ local function FallCamera()
         local camera = workspace.CurrentCamera
         camera.CameraType = Enum.CameraType.Custom
         local humanoidRootPart: BasePart? = character:WaitForChild("HumanoidRootPart", 20)
+        local humanoid: Humanoid = character:WaitForChild("Humanoid", 20)
 
-        if not humanoidRootPart then
+        if humanoidRootPart == nil or humanoid == nil then
             return
         end
 
         local function DoFallTracking()
             camera.CameraType = Enum.CameraType.Scriptable
+            humanoid:ChangeState(Enum.HumanoidStateType.Physics, true)
 
             local runConnection
             runConnection = RunService.RenderStepped:Connect(function(delta)

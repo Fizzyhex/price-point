@@ -8,11 +8,10 @@ local logger = CreateLogger(script)
 local function PriceReveal(system)
     return Promise.new(function(resolve)
         local replicatedRoundState = system:GetRoundStateContainer()
-        local productData = system:GetCurrentProduct()
 
         replicatedRoundState:Patch({
             phase = "PriceReveal",
-            price = productData.PriceInRobux or productData.Price or productData.Robux or 0,
+            price = system:GetCurrentProductPrice(),
             roundTimer = 0
         })
 

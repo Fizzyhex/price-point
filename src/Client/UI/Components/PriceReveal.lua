@@ -12,6 +12,7 @@ local Signal = require(ReplicatedStorage.Packages.Signal)
 local Bin = require(ReplicatedStorage.Shared.Util.Bin)
 local SoundUtil = require(ReplicatedStorage.Shared.Util.SoundUtil)
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
+local NumberUtil = require(ReplicatedStorage.Shared.Util.NumberUtil)
 local New = Fusion.New
 local Children = Fusion.Children
 local Value = Fusion.Value
@@ -125,7 +126,8 @@ local function PriceReveal(props)
                             return "The price is..."
                         else
                             local roundedPrice = math.round(priceSpring:get())
-                            return `R${roundedPrice}`
+                            local formattedPrice = NumberUtil.CommaSeperate(roundedPrice)
+                            return `R${formattedPrice}`
                         end
                     end),
 

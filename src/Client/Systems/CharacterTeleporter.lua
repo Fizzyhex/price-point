@@ -11,6 +11,8 @@ local function CharacterTeleporter()
 
         if humanoid.Sit then
             humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+            -- Seats seem to get teleported with the player a lot of the time otherwise...
+            task.wait()
         end
 
         character:PivotTo(cframe)

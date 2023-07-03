@@ -1,12 +1,15 @@
 local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
+local InsertService = game:GetService("InsertService")
 
 local Red = require(ReplicatedStorage.Packages.Red)
 local NetworkNamespaces = require(ReplicatedStorage.Shared.Constants.NetworkNamespaces)
 local RateLimiter = require(ServerStorage.Server.Util.RateLimiter)
 local CreateLogger = require(ReplicatedStorage.Shared.CreateLogger)
 local BundleUtil = require(ReplicatedStorage.Shared.Util.BundleUtil)
+local GearPropUtil = require(ServerStorage.Server.Util.GearPropUtil)
+local HumanoidDescriptionAssetFields = require(ServerStorage.Server.Data.HumanoidDescriptionAssetFields)
 
 -- this is not scalable
 local LAYERED_CLOTHING_TYPES = {
@@ -40,7 +43,15 @@ local function AvatarRequestListener()
             return false
         end
 
-        if assetType == "EmoteAnimation" then
+        if assetType == "Gear" then
+            local prop = GearPropUtil.GetPropFromPlayer(player)
+
+            if prop then
+                prop:Destroy()
+            end
+
+            return true, true
+        elseif assetType == "EmoteAnimation" then
             description:RemoveEmote(itemId)
             return true
         elseif LAYERED_CLOTHING_TYPES[assetType] then
@@ -98,7 +109,26 @@ local function AvatarRequestListener()
             return false
         end
 
-        if assetType == "EmoteAnimation" then
+        if assetType == "Gear" then
+            local gear = InsertService:LoadAsset(itemId):GetChildren()[1]
+            local backpack = player:FindFirstChildWhichIsA("Backpack")
+
+            if backpack and gear and gear:IsA("Tool") then
+                local prop = GearPropUtil.Propify(gear)
+                local currentProp = GearPropUtil.GetPropFromPlayer(player)
+
+                if currentProp then
+                    currentProp:Destroy()
+                end
+
+                prop.CanBeDropped = false
+                prop.Parent = if player.Character then player.Character else backpack
+
+                return true, true
+            else
+                return false
+            end
+        elseif assetType == "EmoteAnimation" then
             description:AddEmote(itemId, itemId)
             return true
         elseif LAYERED_CLOTHING_TYPES[assetType] then
@@ -127,8 +157,10 @@ local function AvatarRequestListener()
             humanoid:ApplyDescription(bundleDescription, Enum.AssetTypeVerification.Always)
             return true
         else
+            local field = HumanoidDescriptionAssetFields[assetType] or assetType
+
             local ok, err = pcall(function()
-                description[assetType] = itemId
+                description[field] = itemId
             end)
 
             if ok then

@@ -1,11 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Fusion = require(ReplicatedStorage.Packages.Fusion)
-local Children = Fusion.Children
-
-local Label = require(ReplicatedStorage.Client.UI.Components.Label)
-local Nest = require(ReplicatedStorage.Client.UI.Components.Nest)
-local VerticalListLayout = require(ReplicatedStorage.Client.UI.Components.VerticalListLayout)
 local PriceReveal = require(ReplicatedStorage.Client.UI.Components.PriceReveal)
 local Signal = require(ReplicatedStorage.Packages.Signal)
 
@@ -19,7 +13,7 @@ return function(target: Instance)
         Parent = target,
     }
 
-    playEvent:Fire(300)
+    playEvent:Fire(math.random(0, 10000))
 
     task.delay(6.5, function()
         endEvent:Fire()

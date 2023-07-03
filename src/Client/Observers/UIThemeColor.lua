@@ -18,6 +18,8 @@ local function UIThemeColor()
             property = "BackgroundColor3"
         elseif instance:IsA("Decal") or instance:IsA("Texture") then
             property = "Color3"
+        elseif instance:IsA("ImageLabel") or instance:IsA("ImageButton") then
+            property = "ImageColor3"
         end
 
         local originalColor = instance[property]

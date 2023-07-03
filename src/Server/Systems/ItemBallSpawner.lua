@@ -40,6 +40,14 @@ local function ItemBallSpawner(props)
     local function InforceBallLimit()
         local existingBalls = CollectionService:GetTagged(BALL_TAG)
 
+        for index, ball in existingBalls do
+            -- Assume any balls that don't contain a BasePart have been removed by FallenPartsDestroyHeight
+            if ball:FindFirstChildWhichIsA("BasePart") == nil then
+                ball:Destroy()
+                table.remove(existingBalls, index)
+            end
+        end
+
         if #existingBalls >= MAX_BALLS and RANDOM:NextInteger(1, 2) == 1 then
             existingBalls[1]:Destroy()
         end

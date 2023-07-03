@@ -19,8 +19,11 @@ local HorizontalListLayout = require(ReplicatedStorage.Client.UI.Components.Hori
 local Valueify = require(ReplicatedStorage.Client.UI.Util.Valueify)
 local PrimaryButton = require(ReplicatedStorage.Client.UI.Components.PrimaryButton)
 local Button = require(ReplicatedStorage.Client.UI.Components.Button)
+local NumberUtil = require(ReplicatedStorage.Shared.Util.NumberUtil)
+local Unwrap = require(ReplicatedStorage.Client.UI.Util.Unwrap)
 
 local PADDING = UDim.new(0, 12)
+local ACTION_BUTTON_SIZE = UDim2.fromOffset(100, 0)
 local STRIPPED_PROPS = { "Image", "Price", "Name", "Action", "OnActionClicked" }
 local ACTION_BUTTON_KEY = {
     equip = "Equip",
@@ -45,7 +48,7 @@ local function AvatarItemCard(props)
                         BackgroundTransparency = 1,
                         Image = props.Image,
                         ScaleType = Enum.ScaleType.Fit,
-                        Size = UDim2.fromOffset(100, 100)
+                        Size = UDim2.fromOffset(100, 80)
                     },
 
                     Nest {
@@ -56,12 +59,22 @@ local function AvatarItemCard(props)
                         [Children] = {
                             Label {
                                 Name = "NameLabel",
-                                Text = props.Name
+                                Text = props.Name,
+                                AutomaticSize = Enum.AutomaticSize.Y,
+                                TextXAlignment = Enum.TextXAlignment.Left,
+                                TextTruncate = Enum.TextTruncate.AtEnd,
+                                Size = UDim2.fromOffset(260, 0)
                             },
 
                             IconContainer {
+                                Size = UDim2.fromScale(1, 0),
                                 Icon = Icon { Image = "rbxassetid://13480760066" },
-                                Label = Label { Text = props.Price },
+                                Label = Label {
+                                    Text = Computed(function()
+                                        local price = Unwrap(props.Price) or 0
+                                        return NumberUtil.CommaSeperate(price)
+                                    end),
+                                },
                             },
 
                             VerticalListLayout {}
@@ -73,18 +86,19 @@ local function AvatarItemCard(props)
             },
 
             Label {
-                Text = "Off-sale",
+                Text = "Unavailable",
                 TextTransparency = 0.3,
                 Position = UDim2.fromScale(1, 0),
                 AnchorPoint = Vector2.new(1, 0),
                 Visible = Computed(function()
-                    return action:get() == "off-sale"
+                    return action:get() == "unavailable"
                 end)
             },
 
             PrimaryButton {
                 Text = "Purchase",
                 Position = UDim2.fromScale(1, 0),
+                Size = ACTION_BUTTON_SIZE,
                 AnchorPoint = Vector2.new(1, 0),
                 Visible = Computed(function()
                     return action:get() == "purchase"
@@ -98,6 +112,7 @@ local function AvatarItemCard(props)
                 end),
                 BackgroundColor3 = ThemeProvider:GetColor("background_3"),
                 TextColor3 = ThemeProvider:GetColor("body"),
+                Size = ACTION_BUTTON_SIZE,
                 Position = UDim2.fromScale(1, 0),
                 AnchorPoint = Vector2.new(1, 0),
                 Visible = Computed(function()

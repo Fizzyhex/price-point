@@ -9,27 +9,31 @@ local StateContainers = require(ReplicatedStorage.Shared.StateContainers)
 local productFeedStateContainer = StateContainers.productFeedStateContainer
 
 local TableUtil = require(ReplicatedStorage.Packages.TableUtil)
+local Red = require(ReplicatedStorage.Packages.Red)
 
 local Background = require(ReplicatedStorage.Client.UI.Components.Background)
 local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.ShorthandPadding)
 local VerticalListLayout = require(ReplicatedStorage.Client.UI.Components.VerticalListLayout)
 local AvatarItemCard = require(ReplicatedStorage.Client.UI.Components.AvatarItemCard)
 local ScrollFrame = require(ReplicatedStorage.Client.UI.Components.ScrollFrame)
-
-local Fusion = require(ReplicatedStorage.Packages.Fusion)
-local Red = require(ReplicatedStorage.Packages.Red)
-local NetworkNamespaces = require(ReplicatedStorage.Shared.Constants.NetworkNamespaces)
-local CreateLogger = require(ReplicatedStorage.Shared.CreateLogger)
-local Label = require(ReplicatedStorage.Client.UI.Components.Label)
 local Nest = require(ReplicatedStorage.Client.UI.Components.Nest)
 local Header = require(ReplicatedStorage.Client.UI.Components.Header)
+local ThemeProvider = require(ReplicatedStorage.Client.UI.Util.ThemeProvider)
+
+local NetworkNamespaces = require(ReplicatedStorage.Shared.Constants.NetworkNamespaces)
+local CreateLogger = require(ReplicatedStorage.Shared.CreateLogger)
+
+local Fusion = require(ReplicatedStorage.Packages.Fusion)
+local Label = require(ReplicatedStorage.Client.UI.Components.Label)
 local Value = Fusion.Value
+local Spring = Fusion.Spring
 local Children = Fusion.Children
 local Computed = Fusion.Computed
 local ForPairs = Fusion.ForPairs
 
 local LOCAL_PLAYER = Players.LocalPlayer
-local ENABLE_STUDIO_TEST_ITEMS = false
+local ENABLE_STUDIO_TEST_ITEMS = true
+local MAX_ITEMS = 25
 
 local logger = CreateLogger(script)
 
@@ -47,7 +51,7 @@ local function ProductFeedDisplay()
         return value
     end
 
-    MarketplaceService.PromptBundlePurchaseFinished:Connect(function(purchaser, bundleId, wasPurchased)
+    MarketplaceService.PromptBundlePurchaseFinished:Connect(function(_, bundleId, wasPurchased)
         if not wasPurchased then
             return
         end
@@ -61,7 +65,7 @@ local function ProductFeedDisplay()
         end
     end)
 
-    MarketplaceService.PromptPurchaseFinished:Connect(function(purchaser, assetId, wasPurchased)
+    MarketplaceService.PromptPurchaseFinished:Connect(function(_, assetId, wasPurchased)
         if not wasPurchased then
             return
         end
@@ -101,6 +105,10 @@ local function ProductFeedDisplay()
             })
         end
 
+        while #newHistory > MAX_ITEMS and MAX_ITEMS ~= 0 do
+            table.remove(newHistory, 1)
+        end
+
         history:set(TableUtil.Extend(history:get(), newHistory))
     end)
 
@@ -108,11 +116,12 @@ local function ProductFeedDisplay()
         productFeedStateContainer:Patch({
             {id = 9490601996, type = Enum.AvatarItemType.Asset},
             {id = 496, type = Enum.AvatarItemType.Bundle},
-            {id = 161, type = Enum.AvatarItemType.Bundle}
+            {id = 161, type = Enum.AvatarItemType.Bundle},
+            {id = 10472779, type = Enum.AvatarItemType.Asset}, -- Bloxy Cola :>
         })
     end
 
-    local function AvatarUpdateCallback(worked: boolean)
+    local function AvatarUpdateCallback(worked: boolean, hideSavePrompt: boolean?)
         if not worked then
             logger.warn(`Failed to equip avatar item: server returned {worked}`)
             return
@@ -120,7 +129,10 @@ local function ProductFeedDisplay()
 
         local humanoid = LOCAL_PLAYER.Character and LOCAL_PLAYER.Character:FindFirstChildWhichIsA("Humanoid")
         local description = humanoid and humanoid:GetAppliedDescription()
-        AvatarEditorService:PromptSaveAvatar(description, humanoid.RigType)
+
+        if not hideSavePrompt then
+            AvatarEditorService:PromptSaveAvatar(description, humanoid.RigType)
+        end
     end
 
     Observers.observeTag("ProductFeedDisplay", function(parent: Instance)
@@ -139,7 +151,8 @@ local function ProductFeedDisplay()
                             Size = UDim2.fromScale(1, 0),
                             AutomaticSize = Enum.AutomaticSize.Y,
                             TextWrapped = true,
-                            Text = "Empty... but any new marketplace items will appear here after their prices are guessed!",
+                            TextTransparency = 0.3,
+                            Text = "Empty... but any new items will appear here after their prices are guessed!",
                             ZIndex = 2,
                             Visible = Computed(function()
                                 return #history:get() == 0
@@ -151,12 +164,14 @@ local function ProductFeedDisplay()
                 },
 
                 ScrollFrame {
-                    Size = UDim2.fromScale(1, 1),
-                    CanvasSize = UDim2.fromScale(1, 0),
-                    AutomaticSize = Enum.AutomaticSize.Y,
+                    Size = UDim2.new(1, 0, 1, -40   ),
+                    CanvasSize = UDim2.fromScale(0, 1),
+                    AutomaticCanvasSize = Enum.AutomaticSize.Y,
 
                     [Children] = {
                         ForPairs(history, function(index, data)
+                            print("Info", data.info:get())
+                            local backgroundColorSpring = Spring(ThemeProvider:GetColor("background_2"), 10)
                             local info = data.info
                             local isEquipped = data.isEquipped
                             local lastClick = data.lastClick
@@ -168,15 +183,20 @@ local function ProductFeedDisplay()
                                         return if isEquipped:get() then "unequip" else "equip"
                                     end
                                 elseif info:get().IsPurchasable == false then
-                                    return "off-sale"
+                                    return "unavailable"
                                 else
                                     return "purchase"
                                 end
                             end)
 
+                            task.defer(function()
+                                backgroundColorSpring:setPosition(ThemeProvider:GetColor("accent"):get())
+                            end)
+
                             return index, AvatarItemCard {
                                 LayoutOrder = -index,
                                 Size = UDim2.fromScale(1, 0),
+                                BackgroundColor3 = backgroundColorSpring,
 
                                 Name = Computed(function()
                                     return info:get().Name or "???"
@@ -212,32 +232,40 @@ local function ProductFeedDisplay()
                                     elseif action:get() == "equip" or action:get() == "wear" then
                                         avatarNetwork
                                         :Call("Equip", data.id, info:get().AssetType, info:get().BundleType)
-                                        :Then(function(worked)
+                                        :Then(function(worked, hideSavePrompt)
                                             if worked then
                                                 isEquipped:set(true)
                                             end
 
-                                            AvatarUpdateCallback(worked)
+                                            AvatarUpdateCallback(worked, hideSavePrompt)
                                         end)
                                     elseif action:get() == "unequip" then
                                         avatarNetwork
                                         :Call("Unequip", data.id, info:get().AssetType, info:get().BundleType)
-                                        :Then(function(worked)
+                                        :Then(function(worked, hideSavePrompt)
                                             if worked then
                                                 isEquipped:set(false)
                                             end
 
-                                            AvatarUpdateCallback(worked)
+                                            AvatarUpdateCallback(worked, hideSavePrompt)
                                         end)
                                     end
                                 end,
 
-                                Action = action
+                                Action = action,
                             }
                         end, Fusion.cleanup),
+
                         ShorthandPadding { Padding = UDim.new(0, 8) },
                         VerticalListLayout { Padding = UDim.new(0, 8) },
                     }
+                },
+
+                Label {
+                    Text = "♥ I receive a 40% commission on anything you buy from this menu!",
+                    Size = UDim2.fromScale(1, 0),
+                    AnchorPoint = Vector2.new(0, 1),
+                    Position = UDim2.new(0, 0, 1, -12),
                 },
             }
         }
