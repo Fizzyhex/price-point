@@ -9,9 +9,9 @@ local MAX_BALLS = 6
 local RANDOM = Random.new()
 local BallPrefab = ServerStorage.Assets.ItemBall
 local ALLOWED_ASSET_TYPES = {
-    [Enum.AssetType.Gear] = true,
-    [Enum.AssetType.Head] = true,
-    [Enum.AssetType.Hat] = true
+    Gear = true,
+    Head = true,
+    Hat = true
 }
 
 local function GetLargestScalar(vector: Vector3)
@@ -36,7 +36,7 @@ local function PickRandomSpawnCFrame(): CFrame?
     return CFrame.new(spawnPart.CFrame * randomOffset)
 end
 
-local function ItemBallSpawner(props)
+local function ItemBallSpawner()
     local function InforceBallLimit()
         local existingBalls = CollectionService:GetTagged(BALL_TAG)
 
@@ -58,7 +58,7 @@ local function ItemBallSpawner(props)
             return
         end
 
-        if ALLOWED_ASSET_TYPES[assetType] ~= true and string.find(assetType.Name, "Accessory") == nil then
+        if ALLOWED_ASSET_TYPES[assetType] ~= true and string.find(assetType, "Accessory") == nil then
             return
         end
 

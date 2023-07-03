@@ -152,7 +152,7 @@ local function ProductFeedDisplay()
                             AutomaticSize = Enum.AutomaticSize.Y,
                             TextWrapped = true,
                             TextTransparency = 0.3,
-                            Text = "Empty... but any new items will appear here after their prices are guessed!",
+                            Text = "Empty :( but any new items will appear here after their prices are guessed!",
                             ZIndex = 2,
                             Visible = Computed(function()
                                 return #history:get() == 0
@@ -170,7 +170,6 @@ local function ProductFeedDisplay()
 
                     [Children] = {
                         ForPairs(history, function(index, data)
-                            print("Info", data.info:get())
                             local backgroundColorSpring = Spring(ThemeProvider:GetColor("background_2"), 10)
                             local info = data.info
                             local isEquipped = data.isEquipped

@@ -3,7 +3,7 @@ local ServerStorage = game:GetService("ServerStorage")
 
 local ServerGameStateChannel = require(ServerStorage.Server.EventChannels.ServerGameStateChannel)
 
-local INCREMENT_AMOUNT = 5.5
+local INCREMENT_AMOUNT = 24/6
 
 local function ServerTime()
     local isFirstGame = true

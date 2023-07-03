@@ -38,7 +38,7 @@ local function PriceGuessing(system)
         local productDataPayload = {
             image = imageUri,
             name = productData.Name,
-            type = productData.AssetType,
+            type = productData.AssetType or productData.ItemType,
         }
 
         if productData.Created then
@@ -62,7 +62,7 @@ local function PriceGuessing(system)
                 else MarketplacePreviewUtil.CreateAssetPreviewFromId(id)
 
             if preview then
-                ItemModelChannel.RaiseItemChanged(preview, AssetTypeIdToEnum(productData.AssetType))
+                ItemModelChannel.RaiseItemChanged(preview, productData.AssetType)
             end
         end)
 

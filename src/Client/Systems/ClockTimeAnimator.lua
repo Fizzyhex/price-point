@@ -8,15 +8,20 @@ local function ClockTimeAnimator()
     local clockTime = Fusion.Value(Lighting.TimeOfDay)
     local timeSpring = Fusion.Spring(clockTime, 5)
 
-    local stopObserver = Observers.observeAttribute(Lighting, "ServerTime", function(value: number)
+    Observers.observeAttribute(Lighting, "ServerTime", function(value: number)
         clockTime:set(value)
+    end)
+
+    Fusion.Observer(timeSpring):onChange(function()
+        if timeSpring:get() >= 23.999 then
+            clockTime:set(0)
+            timeSpring:setPosition(0)
+        end
     end)
 
     Fusion.Hydrate(Lighting) {
         ClockTime = timeSpring
     }
-
-    return stopObserver
 end
 
 return ClockTimeAnimator

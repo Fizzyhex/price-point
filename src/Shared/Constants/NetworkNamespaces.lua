@@ -11,7 +11,8 @@ local NETWORK_NAMESPACES = {
     AVATAR = "Avatar",
     MARKETPLACE_REPLICATION = "Marketplace",
     USER_DATA = "UserData",
-    IDLE_REPLICATION = "Idle"
+    IDLE_REPLICATION = "Idle",
+    COLLISIONS = "Collisions"
 }
 
 return NETWORK_NAMESPACES
