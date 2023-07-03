@@ -13,6 +13,7 @@ local function ClockTimeAnimator()
     end)
 
     Fusion.Observer(timeSpring):onChange(function()
+        -- The observer stops firing just before 24 is reached exactly, use a float instead
         if timeSpring:get() >= 23.999 then
             clockTime:set(0)
             timeSpring:setPosition(0)
