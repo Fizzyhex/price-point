@@ -86,7 +86,7 @@ local FONT_SIZES = {
 
 local SURFACE_GUI_BRIGHTNESS = {
     light = 1,
-    dark = 1.8
+    dark = 2.3
 }
 
 -- Contains information about the games themes.

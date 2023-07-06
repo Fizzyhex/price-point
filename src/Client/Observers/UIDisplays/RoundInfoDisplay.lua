@@ -78,6 +78,8 @@ local function RoundInfoDisplay()
                     LayoutOrder = 1,
                     Time = timeRemaining,
                     UrgencyStart = 8,
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    Size = UDim2.fromOffset(0, 150),
                     TextScaled = true,
 
                     [Children] = ScaleOut {
@@ -96,6 +98,10 @@ local function RoundInfoDisplay()
                         return `Round {gameRules:GetAttribute("rounds") - roundsRemaining:get()} / {gameRules:GetAttribute("rounds")}`
                     end),
 
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    Size = UDim2.fromOffset(0, 50),
+                    TextScaled = true,
+
                     [Children] = ScaleOut {
                         Visible = Computed(function()
                             local value = roundsRemaining:get()
@@ -105,6 +111,10 @@ local function RoundInfoDisplay()
                 },
 
                 Label {
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    Size = UDim2.fromOffset(0, 50),
+                    TextScaled = true,
+
                     Text = Computed(function()
                         print(script, "mode=", mode:get())
                         return if mode:get() then mode:get() else ""

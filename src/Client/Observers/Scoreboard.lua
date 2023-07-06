@@ -18,7 +18,7 @@ local roundStateContainer = StateContainers.roundStateContainer
 local ScoreboardChannel = require(ReplicatedStorage.Client.EventChannels.ScoreboardChannel)
 local Bin = require(ReplicatedStorage.Shared.Util.Bin)
 
-local SCOREBOARD_ENTRY_COUNT = 13
+local SCOREBOARD_ENTRY_COUNT = 13 -- this could be moved to an attribute
 local ANCESTORS = { workspace }
 
 local function OrderedScoreIterator(scores: table, iteratorFn: (key: any, value: any) -> ())

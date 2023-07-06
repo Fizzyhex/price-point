@@ -143,7 +143,7 @@ local function PriceReveal(props)
                     [Cleanup] = { binEmpty }
                 },
 
-                ShorthandPadding { Padding = UDim.new(0, 12) }
+                ShorthandPadding { Padding = UDim.new(0, 24) }
             }
         }
 
