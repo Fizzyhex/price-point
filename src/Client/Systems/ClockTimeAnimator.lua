@@ -3,26 +3,37 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Observers = require(ReplicatedStorage.Packages.Observers)
+local ClientSettings = require(ReplicatedStorage.Client.State.ClientSettings)
 
 local function ClockTimeAnimator()
-    local clockTime = Fusion.Value(Lighting.TimeOfDay)
-    local timeSpring = Fusion.Spring(clockTime, 5)
+    local serverTime = Fusion.Value(Lighting:GetAttribute("ServerTime") or 0)
+    local timeSetting = ClientSettings.Time
+    local timeModeSetting = ClientSettings.TimeMode
+    local timeSpring
 
-    Observers.observeAttribute(Lighting, "ServerTime", function(value: number)
-        clockTime:set(value)
-    end)
-
-    Fusion.Observer(timeSpring):onChange(function()
-        -- The observer stops firing just before 24 is reached exactly, use a float instead
-        if timeSpring:get() >= 23.999 then
-            clockTime:set(0)
-            timeSpring:setPosition(0)
+    local clockTime = Fusion.Computed(function()
+        if timeModeSetting.value:get() == "custom" then
+            return timeSetting.value:get()
+        else
+            return serverTime:get()
         end
     end)
 
-    Fusion.Hydrate(Lighting) {
-        ClockTime = timeSpring
-    }
+    timeSpring = Fusion.Spring(clockTime, 5)
+
+    local function SyncServerTime(value: number)
+        serverTime:set(value)
+    end
+
+    Observers.observeAttribute(Lighting, "ServerTime", SyncServerTime)
+    Fusion.Observer(serverTime):onChange(function()
+        -- Teleport the time spring from 24 to 0, to allow the spring to 'wrap around'.
+        if serverTime:get() == 0 and timeSpring:get() >= 23.5 and timeModeSetting.value:get() == "server" then
+            timeSpring:setPosition(serverTime:get())
+        end
+    end)
+
+    Fusion.Hydrate(Lighting) { ClockTime = timeSpring }
 end
 
 return ClockTimeAnimator

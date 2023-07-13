@@ -21,6 +21,7 @@ local Computed = Fusion.Computed
 local ForValues = Fusion.ForValues
 local Cleanup = Fusion.Cleanup
 local Spring = Fusion.Spring
+local Hydrate = Fusion.Hydrate
 
 local STRIPPED_PROPS = { "Settings" }
 local CAMERA = workspace.CurrentCamera
@@ -64,13 +65,13 @@ local function SettingsPannel(props)
                     component = HorizontalSlider {
                         Size = UDim2.fromOffset(300, 20),
                         Output = setting.value,
-                        Range = NumberRange.new(setting.min, setting.max)
+                        Range = NumberRange.new(setting.min, setting.max),
                     }
                 elseif setting.type == "Toggle" then
                     component = ToggleGroup {
                         Size = UDim2.fromOffset(300, 0),
                         CurrentSelection = setting.value,
-                        Options = assert(setting.options, `Setting "{setting.id}" is missing options`)
+                        Options = assert(setting.options, `Setting "{setting.id}" is missing options`),
                     }
                 end
 
@@ -80,13 +81,14 @@ local function SettingsPannel(props)
                     BackgroundTransparency = 1,
                     AutomaticSize = Enum.AutomaticSize.XY,
                     Size = UDim2.fromOffset(0, 50),
+                    Visible = setting.enabled,
 
                     [Children] = {
                         Label {
                             Size = UDim2.fromOffset(150, 0),
                             AutomaticSize = Enum.AutomaticSize.Y,
                             TextXAlignment = Enum.TextXAlignment.Left,
-                            Text = Unwrap(setting.displayName or setting.id)
+                            Text = Unwrap(setting.displayName or setting.id),
                         },
                         component,
                         HorizontalListLayout {
