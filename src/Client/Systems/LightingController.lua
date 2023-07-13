@@ -8,11 +8,40 @@ local Hydrate = Fusion.Hydrate
 local Out = Fusion.Out
 
 local colorBlends = {
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 222, 255)),
-    ColorSequenceKeypoint.new(5, Color3.fromRGB(220, 222, 255)),
-    ColorSequenceKeypoint.new(13, Color3.fromRGB(197, 197, 197)),
-    ColorSequenceKeypoint.new(24, Color3.fromRGB(220, 222, 255)),
+    ColorSequenceKeypoint.new(3, Color3.fromRGB(130, 190, 255)),
+    ColorSequenceKeypoint.new(5, Color3.fromRGB(207, 186, 228)),
+    ColorSequenceKeypoint.new(13, Color3.fromRGB(153, 206, 255)),
+    ColorSequenceKeypoint.new(17.5, Color3.fromRGB(153, 206, 255)),--ColorSequenceKeypoint.new(17.5, Color3.fromRGB(255, 166, 41)),
+    ColorSequenceKeypoint.new(22, Color3.fromRGB(165, 208, 255)),
 }
+
+local decayBlends = {
+    ColorSequenceKeypoint.new(3, Color3.fromRGB(156, 130, 213)),
+    ColorSequenceKeypoint.new(5, Color3.fromRGB(255, 168, 110)),
+    ColorSequenceKeypoint.new(13, Color3.fromRGB(255, 255, 255)),
+    ColorSequenceKeypoint.new(17.5, Color3.fromRGB(255, 255, 255)),--ColorSequenceKeypoint.new(17.5, Color3.fromRGB(213, 127, 88)),
+    ColorSequenceKeypoint.new(22, Color3.fromRGB(156, 130, 213)),
+}
+
+local glareBlends = {
+    NumberSequenceKeypoint.new(3, 1),
+    NumberSequenceKeypoint.new(5, 0.3),
+    NumberSequenceKeypoint.new(13, 0.25),
+    NumberSequenceKeypoint.new(17.5, 0.15),
+    NumberSequenceKeypoint.new(22, 1),
+}
+
+local hazeBlends = {
+    NumberSequenceKeypoint.new(3, 0.8),
+    NumberSequenceKeypoint.new(5, 1),
+    NumberSequenceKeypoint.new(13, 0.6),
+    NumberSequenceKeypoint.new(17.5, 3),
+    NumberSequenceKeypoint.new(22, 0.6),
+}
+
+local function Lerp(a, b, t)
+	return a + (b - a) * t
+end
 
 local function GetSequenceValue(keypoints, value)
     local lowest, highest
@@ -26,15 +55,19 @@ local function GetSequenceValue(keypoints, value)
         local lowestDistance = lowest and math.abs(lowest.Time - value)
         local highestDistance = highest and math.abs(highest.Time - value)
 
-        if keypoint.Time < value and lowest == nil or lowestDistance > distance then
+        if keypoint.Time < value and (lowest == nil or lowestDistance > distance) then
             lowest = keypoint
-        elseif keypoint.Time > value and highest == nil or highestDistance > distance then
+        elseif keypoint.Time > value and (highest == nil or highestDistance > distance) then
             highest = keypoint
         end
     end
 
     if lowest and highest then
-        return lowest.Value:Lerp(highest.Value, lowest.Time / highest.Time)
+        if typeof(lowest.Value) == "number" then
+            return Lerp(lowest.Value, highest.Value, lowest.Time / highest.Time)
+        else
+            return lowest.Value:Lerp(highest.Value, lowest.Time / highest.Time)
+        end
     else
         return if lowest then lowest.Value elseif highest then highest.Value else nil
     end
@@ -53,17 +86,20 @@ local function LightingController()
     }
 
     Hydrate(atmosphere) {
-        Glare = Spring(Computed(function()
-            return if isDark:get() then 0.5 else 0.3
-        end), 2),
-
         Color = Spring(Computed(function()
             return GetSequenceValue(colorBlends, clockTime:get())
-            --return if isDark:get() then Color3.fromRGB(220, 222, 255) else Color3.fromRGB(197, 197, 197)
         end), 2),
 
         Decay = Spring(Computed(function()
-            return if isDark:get() then Color3.fromRGB(125, 212, 255) else Color3.fromRGB(230, 189, 142)
+            return GetSequenceValue(decayBlends, clockTime:get())
+        end), 2),
+
+        Haze = Spring(Computed(function()
+            return GetSequenceValue(hazeBlends, clockTime:get())
+        end), 2),
+
+        Glare = Spring(Computed(function()
+            return GetSequenceValue(glareBlends, clockTime:get())
         end), 2)
     }
 end

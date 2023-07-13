@@ -6,8 +6,8 @@ local Observers = require(ReplicatedStorage.Packages.Observers)
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local Promise = require(ReplicatedStorage.Packages.Promise)
 
-local COLOR1 = Color3.fromRGB(222, 245, 255)
-local COLOR2 = Color3.fromRGB(255, 248, 243)
+local COLOR1 = Color3.fromRGB(222, 250, 255)
+local COLOR2 = Color3.fromRGB(255, 225, 194)
 local RANDOM = Random.new()
 local TAG = "NightWindows"
 
@@ -40,7 +40,7 @@ local function NightWindows()
     end
 
     local function Update(texture: Texture)
-        texture.Color3 = if isDark:get() then MultiplyColor(GetBaseColor(texture), 9) else Color3.new(1, 1, 1)
+        texture.Transparency = if isDark:get() then 0 else 1
     end
 
     local i = 0
@@ -108,6 +108,7 @@ local function NightWindows()
             Update(texture)
         end
 
+        texture.Color3 = MultiplyColor(GetBaseColor(texture), 12)
         table.insert(instances, texture)
 
         return function()

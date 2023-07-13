@@ -9,11 +9,12 @@ local function Lantern()
         local light: PointLight = bulb:WaitForChild("PointLight")
         local ambientLight: PointLight = bulb:WaitForChild("AmbientLight")
         local originalBulbColor = bulb.Color
-        light.Shadows = lantern:GetAttribute("CastShadows") == true
 
         local function EnableLantern()
             light.Enabled = true
             ambientLight.Enabled = true
+            ambientLight.Shadows = lantern:GetAttribute("CastAmbientShadows") == true
+            light.Shadows = lantern:GetAttribute("CastShadows") == true
             bulb.Color = originalBulbColor
         end
 
