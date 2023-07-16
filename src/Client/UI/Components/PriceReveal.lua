@@ -127,7 +127,7 @@ local function PriceReveal(props)
                         else
                             local roundedPrice = math.round(priceSpring:get())
                             local formattedPrice = NumberUtil.CommaSeperate(roundedPrice)
-                            return `R${formattedPrice}`
+                            return `\u{E002}{formattedPrice}`
                         end
                     end),
 
