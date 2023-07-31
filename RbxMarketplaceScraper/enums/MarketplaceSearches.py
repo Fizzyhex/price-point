@@ -1,3 +1,6 @@
+from enum import Enum
+from structs.MarketplaceSearch import MarketplaceSearch
+
 class MarketplaceSearches(Enum): # not exhaustive, but good enough for our use case
     gear = MarketplaceSearch(category="Accessories", subcategory="Gear")
     accessories = MarketplaceSearch(category="Accessories", subcategory=None)
