@@ -1,7 +1,9 @@
 # 💲 Price Point
+![Alt](GitMedia/banner.png)
+
 [Game Link](https://www.roblox.com/games/13085543769/Price-Point)
 
-Price Point is a game about guessing the prices of a bunch of items from the Roblox marketplace!
+Price Point is a simple game about guessing the prices of a bunch of items from the Roblox marketplace!
 
 ## Goals
 
