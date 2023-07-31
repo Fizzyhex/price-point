@@ -11,5 +11,8 @@ Packages
 # Art
 Assets
 
+# Roblox Luau LSP (although this project was designed for Roblox LSP)
+sourcemap.json
+
 # Scrapes
 **/ScrapeExports

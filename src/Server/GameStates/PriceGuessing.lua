@@ -10,14 +10,6 @@ local ServerGameStateChannel = require(ServerStorage.Server.EventChannels.Server
 
 local logger = CreateLogger(script)
 
-local function AssetTypeIdToEnum(id)
-    for _, enumItem: EnumItem in Enum.AssetType:GetEnumItems() do
-        if enumItem.Value == id then
-            return enumItem
-        end
-    end
-end
-
 local function PriceGuessing(system)
     return Promise.new(function(resolve)
         local roundStateContainer = system:GetRoundStateContainer()

@@ -69,11 +69,34 @@ local function MakeProductPools()
     return productPools
 end
 
+local function GetCategoryGroups(rules, productPools)
+    local groups = {}
+
+    for category in productPools do
+        local number = rules[category] or 1
+        groups[number] = groups[number] or {}
+        table.insert(groups[number], category)
+    end
+
+    return groups
+end
+
 local GameLoop = {}
 
 function GameLoop:OnStart()
     logger.print("Starting game state machine...")
     local productPools = MakeProductPools()
+
+    local categoryGroupConfig = {
+        Accessories = 1,
+        Animations = 2,
+        Characters = 1,
+        Clothing = 1,
+        Collectibles = 2,
+        Gear = 2,
+        Heads = 1,
+        UGC = 1
+    }
 
     if USE_TEST_PRODUCTS then
         logger.warn("Test products are being used.")
@@ -84,7 +107,8 @@ function GameLoop:OnStart()
     local function RunGame()
         logger.print("Running game")
         return GameStateMachine.new(
-            productPools
+            productPools,
+            GetCategoryGroups(categoryGroupConfig, productPools)
         ):Start(function()
             logger.print("Starting a new game")
             task.spawn(RunGame)

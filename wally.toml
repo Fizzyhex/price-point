@@ -3,6 +3,7 @@ name = "do-not-publish/price-point"
 version = "0.1.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
+private = true
 
 [dependencies]
 Baseline = "fizzyhex/baseline@0.2.2"

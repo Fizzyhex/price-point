@@ -155,11 +155,12 @@ function GameStateMachine:GetActivePlayers()
     return Players:GetPlayers()
 end
 
-function GameStateMachine:_GetRandomProduct(categories: table?)
+function GameStateMachine:_GetRandomProduct(categories: {}?)
     if not categories then
         categories = TableUtil.Keys(self._productPools)
     end
 
+    assert(categories)
     local randomCategory = categories[RANDOM:NextInteger(1, #categories)]
     local productData = self._productPools[randomCategory]:Pop()
     local infoType = if productData.itemType == "Bundle" then "Bundle" else "Asset"
@@ -202,7 +203,12 @@ function GameStateMachine:GetCurrentProductPrice()
 end
 
 function GameStateMachine:PickMatchCategories()
-    local categories = TableUtil.Sample(TableUtil.Keys(self._productPools), 2)
+    local categories = {}
+
+    for _, group in self._categoryGroups do
+        table.insert(categories, group[math.random(1, #group)])
+    end
+
     self._matchCategories = categories
     logger.print("Picked categories:", categories)
     return table.clone(categories)
@@ -256,7 +262,7 @@ function GameStateMachine:Destroy()
     self._itemDisplaySetter:Destroy()
 end
 
-function GameStateMachine.new(productPools)
+function GameStateMachine.new(productPools, categoryGroups)
     local self = setmetatable({}, GameStateMachine)
     self._roundStateContainer = StateContainers.roundStateContainer
     self._scoreStateContainer = StateContainers.scoreStateContainer
@@ -266,6 +272,7 @@ function GameStateMachine.new(productPools)
     self._productPools = productPools
     self._roundsRemaining = assert(gameRules:GetAttribute("rounds"), "'rounds' game rule is not set")
     self._guesses = {}
+    self._categoryGroups = categoryGroups
 
     local itemDisplaySetter = Instance.new("ObjectValue")
     itemDisplaySetter.Name = "ItemDisplaySetter"
