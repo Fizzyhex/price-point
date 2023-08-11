@@ -125,7 +125,7 @@ local function ItemTitleDisplay()
                             return "Intermission"
                         elseif phase == "GameOver" then
                             local winner = winnerName:get()
-                            return if winner then `{string.upper(winner)} WON!` else ""
+                            return if winner then `{winner} won!` else ""
                         else
                             return currentProductName:get() or ""
                         end
@@ -157,7 +157,7 @@ local function ItemTitleDisplay()
                             return newGameMessages[RANDOM:NextInteger(1, #newGameMessages)]
                         elseif phase == "GameOver" then
                             if winnerPoints:get() and winnerPoints:get() > 1 then
-                                return `They had {winnerPoints:get()} points!`
+                                return `Final score: {winnerPoints:get()}`
                             else
                                 return ""
                             end
