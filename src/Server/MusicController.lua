@@ -25,6 +25,7 @@ local function PlayTrack(track)
     track.SoundGroup = SoundUtil.FindSoundGroup("Music")
     track.Volume = 0
     track:Play()
+    SoundService:SetAttribute("CurrentTrack", GetGUID(track))
 end
 
 function MusicController.SetCategory(categoryName)
