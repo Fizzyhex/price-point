@@ -5,7 +5,7 @@ local NetworkNamespaces = require(ReplicatedStorage.Shared.Constants.NetworkName
 local Red = require(ReplicatedStorage.Packages.Red)
 
 local function PlayerGuessRecorder(onGuessCallback: (player: Player, guess: number) -> ())
-    local network = Red.Server(NetworkNamespaces.GUESS_SUBMISSION, {"Submit"})
+    local network = Red.Server(NetworkNamespaces.GUESS_SUBMISSION)
     local guesses = {}
 
     network:On("Submit", function(player: Player, guess: number)

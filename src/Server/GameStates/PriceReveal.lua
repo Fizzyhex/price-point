@@ -1,5 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService("ServerStorage")
 
+local MusicController = require(ServerStorage.Server.MusicController)
 local Promise = require(ReplicatedStorage.Packages.Promise)
 local CreateLogger = require(ReplicatedStorage.Shared.CreateLogger)
 
@@ -17,11 +19,12 @@ local function PriceReveal(system)
 
         local finalGuesses = system:GetGuesses()
         system:CloseGuessing()
+        MusicController.FadeOutMusic()
         logger.print("Final guesses are in!", finalGuesses)
 
-        task.wait(7)
-        logger.print("Reveal over")
-
+        task.wait(7.5)
+        MusicController.SetCategory("Intermission")
+        task.wait(2.5)
         resolve(system:GetStateByName("RewardPoints"))
     end)
 end

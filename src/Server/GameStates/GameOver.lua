@@ -5,12 +5,14 @@ local ServerStorage = game:GetService("ServerStorage")
 local Promise = require(ReplicatedStorage.Packages.Promise)
 
 local CreateLogger = require(ReplicatedStorage.Shared.CreateLogger)
+local PlayRandomSound = require(ReplicatedStorage.Shared.Util.PlayRandomSound)
 local ServerItemProjector = require(ServerStorage.Server.Components.ServerItemProjector)
 local CharacterChannel = require(ServerStorage.Server.EventChannels.CharacterChannel)
+local MusicController = require(ServerStorage.Server.MusicController)
 
 local logger = CreateLogger(script)
 
-local function OrderedScoresIterator(t: table)
+local function OrderedScoresIterator(t)
     local index = 0
 
     return function()
@@ -46,7 +48,7 @@ local function SetupPodium(orderedScores, podium)
         end
 
         local score = orderedScores[placement] and orderedScores[placement][2]
-        local statsFrame = part.SurfaceGui.Stats
+        local statsFrame = (part :: any).SurfaceGui.Stats
 
         if score then
             statsFrame.Visible = true
@@ -111,6 +113,9 @@ local function GameOver(system)
         local orderedScores = SortScores(scoreStateContainer:GetAll())
         local orderedCharacters = {}
         local winner
+        local winnerScore
+
+        MusicController.FadeOutMusic()
 
         podium:SetAttribute("isVisible", true)
 
@@ -129,6 +134,7 @@ local function GameOver(system)
             if player then
                 if not winner then
                     winner = player
+                    winnerScore = score
                 end
 
                 table.insert(orderedCharacters, player.Character)
@@ -138,13 +144,14 @@ local function GameOver(system)
         if winner then
             roundStateContainer:Patch({
                 phase = "GameOver",
-                winnerName = winner.DisplayName
+                winnerName = winner.DisplayName,
+                winnerPoints = winnerScore
             })
         end
 
         local podiumSpots = SetupPodium(orderedScores, podium)
         local revertPodiumTeleports = TeleportOntoPodium(orderedCharacters, podiumSpots)
-        ReplicatedStorage.Assets.Sounds.Win:Play()
+        PlayRandomSound(ReplicatedStorage.Assets.Sounds.GameOver)
         task.wait(system:GetConclusionTime())
         revertPodiumTeleports()
         podium:SetAttribute("isVisible", false)

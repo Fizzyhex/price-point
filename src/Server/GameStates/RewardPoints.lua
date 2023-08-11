@@ -1,9 +1,13 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
+local ServerStorage = game:GetService("ServerStorage")
 
+local MusicController = require(ServerStorage.Server.MusicController)
 local Promise = require(ReplicatedStorage.Packages.Promise)
 local CreateLogger = require(ReplicatedStorage.Shared.CreateLogger)
+local NumberUtil = require(ReplicatedStorage.Shared.Util.NumberUtil)
+local PlayRandomSound = require(ReplicatedStorage.Shared.Util.PlayRandomSound)
 
 local REWARD_SCORE_SOUND_TAG = "RewardScoreSound"
 
@@ -44,10 +48,16 @@ local function PlaySoundsWithTag(tag: string, playbackSpeed: number?)
     end
 end
 
+local function scoreGuess(price, guess)
+    -- Adding 50 prevents against us from awarding 0 points when the price is 0
+    return 100 * PercentageDistance(guess + 50, price + 50)
+end
+
 local function RewardPoints(system)
     return Promise.new(function(resolve)
         local finalGuesses = system:GetGuesses()
         local scoreStateContainer = system:GetScoreStateContainer()
+        local replicatedRoundState = system:GetRoundStateContainer()
         local price = system:GetCurrentProductPrice()
         local waitTime = 0.5
         local playbackSpeed = 1
@@ -55,6 +65,52 @@ local function RewardPoints(system)
 
         system:RevealGuesses()
         system:ResortScoreboards()
+        
+        MusicController.SetCategory("Intermission")
+
+        local topGuesser
+
+        for userId, guess in finalGuesses do
+            local score = scoreGuess(price, guess)
+
+            if topGuesser == nil or scoreGuess(price, finalGuesses[topGuesser]) < score then
+                topGuesser = userId
+            end
+        end
+
+        if topGuesser then
+            local player = Players:GetPlayerByUserId(topGuesser)
+
+            if player then
+                local guess = finalGuesses[topGuesser]
+                local distance = PercentageDistance(price, guess)
+                local headerText
+                local titleBackgroundColor = "background"
+
+                if price == guess then
+                    titleBackgroundColor = "background_gold"
+                    headerText = `{player.DisplayName} guessed exactly!`
+                    ReplicatedStorage.Assets.Sounds.ExactGuess:Play()
+                elseif distance > 0.75 then
+                    titleBackgroundColor = "background_gold"
+                    ReplicatedStorage.Assets.Sounds.CloseGuess:Play()
+                    headerText = `{player.DisplayName} was close:`
+                else
+                    if distance < 0.3 then
+                        PlayRandomSound(ReplicatedStorage.Assets.Sounds.NotClose:GetChildren())
+                    end
+
+                    headerText = `{player.DisplayName} guessed:`
+                end
+
+                replicatedRoundState:Patch({
+                    headerText = headerText,
+                    bodyText = `\u{E002}{NumberUtil.CommaSeperate(guess)}`,
+                    titleBackgroundColor = titleBackgroundColor
+                })
+            end
+        end
+        
         task.wait(2)
 
         local function GiveOutRewards()
@@ -82,8 +138,7 @@ local function RewardPoints(system)
                     continue
                 end
 
-                -- Adding 50 prevents against us from awarding 0 points when the price is 0
-                local reward = 100 * PercentageDistance(guess + 50, price + 50)
+                local reward = scoreGuess(price, guess)
 
                 -- Prevent against NaN errors, as we have the potential to divide by zero here
                 if reward ~= reward then
@@ -115,6 +170,13 @@ local function RewardPoints(system)
         system:ResortScoreboards()
         logger.print("New scores:", scoreStateContainer:GetAll())
         task.wait(2)
+
+        replicatedRoundState:Patch({
+            headerText = replicatedRoundState.NONE,
+            bodyText = replicatedRoundState.NONE,
+            titleBackgroundColor = replicatedRoundState.NONE
+        })
+
         resolve(system:GetStateByName("NextRound"))
     end)
 end

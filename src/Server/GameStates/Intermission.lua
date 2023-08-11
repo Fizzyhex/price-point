@@ -1,10 +1,12 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService("ServerStorage")
 
 local Promise = require(ReplicatedStorage.Packages.Promise)
 local CreateLogger = require(ReplicatedStorage.Shared.CreateLogger)
 local ServerGameStateChannel = require(ServerStorage.Server.EventChannels.ServerGameStateChannel)
+local MusicController = require(ServerStorage.Server.MusicController)
 
 local logger = CreateLogger(script)
 
@@ -19,6 +21,12 @@ local function Intermission(system)
         local intermissionLength = system:GetIntermissionTime()
         roundStateContainer:Clear()
         system:ClearMatchStateContainer()
+
+        MusicController.SetCategory("Intermission")
+
+        if RunService:IsStudio() then
+            intermissionLength = 3
+        end
 
         while true do
             if #system:GetActivePlayers() == 0 then

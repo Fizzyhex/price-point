@@ -1,4 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService("ServerStorage")
 
 local PropsUtil = require(ReplicatedStorage.Client.UI.Util.PropsUtil)
 local Promise = require(ReplicatedStorage.Packages.Promise)
@@ -10,9 +11,9 @@ local Background = require(ReplicatedStorage.Client.UI.Components.Background)
 local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.ShorthandPadding)
 local Signal = require(ReplicatedStorage.Packages.Signal)
 local Bin = require(ReplicatedStorage.Shared.Util.Bin)
-local SoundUtil = require(ReplicatedStorage.Shared.Util.SoundUtil)
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
 local NumberUtil = require(ReplicatedStorage.Shared.Util.NumberUtil)
+local PlayRandomSound = require(ReplicatedStorage.Shared.Util.PlayRandomSound)
 local New = Fusion.New
 local Children = Fusion.Children
 local Value = Fusion.Value
@@ -35,32 +36,6 @@ local function PriceReveal(props)
     local onEnd = Signal.new()
     local onFinalPriceRevealed = props.OnFinalPriceRevealed
 
-    local sounds = {
-        buildup = New "Sound" {
-            Name = "DrumRoll",
-            SoundId = "rbxassetid://13611319011",
-            RollOffMinDistance = 800,
-            Volume = 0.7,
-            SoundGroup = SoundUtil.FindSoundGroup("SFX")
-        },
-
-        reveal = New "Sound" {
-            Name = "Reveal",
-            SoundId = "rbxassetid://6177000613",
-            RollOffMinDistance = 800,
-            PlaybackSpeed = RANDOM:NextNumber(1, 1.15),
-            Volume = 0.6,
-            SoundGroup = SoundUtil.FindSoundGroup("SFX")
-        },
-
-        itsFree = New "Sound" {
-            Name = "ItsFree",
-            SoundId = "rbxassetid://130771265",
-            RollOffMinDistance = 800,
-            SoundGroup = SoundUtil.FindSoundGroup("SFX")
-        }
-    }
-
     local function Play(price)
         price = Unwrap(price)
         uiPositionSpring:setPosition(UDim2.fromScale(0.5, -1))
@@ -72,7 +47,8 @@ local function PriceReveal(props)
         local accentContrastHeaderColor = ThemeProvider:GetColor("accent_contrast_header")
         local backgroundTransparency = Value(1)
         local binAdd, binEmpty = Bin()
-        sounds.buildup:Play()
+        
+        PlayRandomSound(ReplicatedStorage.Assets.Sounds.PriceTease)
 
         if currentAnimationPromise then
             currentAnimationPromise:cancel()
@@ -102,9 +78,9 @@ local function PriceReveal(props)
                     end
 
                     if price == 0 then
-                        sounds.itsFree:Play()
+                        ReplicatedStorage.Assets.Sounds.Free:Play()
                     else
-                        sounds.reveal:Play()
+                        PlayRandomSound(ReplicatedStorage.Assets.Sounds.PriceReveal)
                     end
                 end)
             end
@@ -154,6 +130,10 @@ local function PriceReveal(props)
         :finallyCall(SetBackgroundTransparency, 0)
         :finallyCall(sleep, 3)
         :finallyCall(function()
+            if price >= 10000 then
+                PlayRandomSound(ReplicatedStorage.Assets.Sounds.HighPrice)
+            end
+
             priceSpring:setPosition(if price == 0 or (price <= 25 and RANDOM:NextInteger(1, 2) == 1) then 1000 else 0)
             isWindup:set(false)
         end)
@@ -182,9 +162,7 @@ local function PriceReveal(props)
                 BackgroundColor3 = Color3.new(1, 1, 1),
                 BackgroundTransparency = flashTransparencySpring
             },
-
             currentLabel,
-            sounds
         },
 
         [Cleanup] = {

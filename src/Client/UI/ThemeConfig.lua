@@ -42,6 +42,11 @@ local THEME_COLORS = {
     error = {
         light = Color3.fromRGB(255, 0, 0),
         dark = Color3.fromRGB(255, 0, 0)
+    },
+
+    background_gold = {
+        light = Color3.fromRGB(255, 220, 104),
+        dark = Color3.fromRGB(255, 220, 104)
     }
 }
 

@@ -50,7 +50,7 @@ for fontSizeName, fontSizes in FONT_SIZES do
     end
 end
 
-function ThemeProvider:GetColor(key: string, themeOverride: string)
+function ThemeProvider:GetColor(key: string, themeOverride: string?)
     if themeOverride then
         local value = THEME_COLORS[key][themeOverride]
         return value

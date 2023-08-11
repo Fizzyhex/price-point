@@ -1,6 +1,7 @@
 export type StartConfig = {
-    systemContainers: {Instance},
-    componentContainers: {Instance}
+    componentPaths: {Instance},
+    systemPaths: {Instance},
+    observerPaths: {Instance},
 }
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

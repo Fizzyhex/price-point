@@ -3,17 +3,16 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Observers = require(ReplicatedStorage.Packages.Observers)
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
-local New = Fusion.New
 local Children = Fusion.Children
 local Value = Fusion.Value
 local Computed = Fusion.Computed
+local Spring = Fusion.Spring
 
 local Header = require(ReplicatedStorage.Client.UI.Components.Header)
 local Background = require(ReplicatedStorage.Client.UI.Components.Background)
 local ShorthandPadding = require(ReplicatedStorage.Client.UI.Components.ShorthandPadding)
 local StateContainers = require(ReplicatedStorage.Shared.StateContainers)
 local roundStateContainer = StateContainers.roundStateContainer
-local Red = require(ReplicatedStorage.Packages.Red)
 local ThemeProvider = require(ReplicatedStorage.Client.UI.Util.ThemeProvider)
 local Bin = require(ReplicatedStorage.Shared.Util.Bin)
 
@@ -46,6 +45,19 @@ local function ItemTitleDisplay()
         local currentProductData = Value(nil)
         local winnerName = Value(nil)
         local currentPhase = Value(nil)
+        local winnerPoints = Value(nil)
+        local headerText = Value(nil)
+        local bodyText = Value(nil)
+        local titleBackgroundColor = Value(nil)
+
+        local backgroundColorSpring = Spring(Computed(function()
+            return ThemeProvider:GetColor(titleBackgroundColor:get() or "background"):get()
+        end))
+
+        local textColorSpring = Spring(Computed(function()
+            local _, _, value = (backgroundColorSpring:get() :: Color3):ToHSV()
+            return if value > 0.5 then Color3.new(0, 0, 0) else Color3.new(1, 1, 1)
+        end))
 
         local currentProductName = Computed(function()
             local data = currentProductData:get()
@@ -81,14 +93,20 @@ local function ItemTitleDisplay()
 
         binAdd(roundStateContainer.FusionUtil.StateHook(roundStateContainer, currentProductData, "productData"))
         binAdd(roundStateContainer.FusionUtil.StateHook(roundStateContainer, winnerName, "winnerName"))
+        binAdd(roundStateContainer.FusionUtil.StateHook(roundStateContainer, winnerPoints, "winnerPoints"))
         binAdd(roundStateContainer.FusionUtil.StateHook(roundStateContainer, currentPhase, "phase"))
+        binAdd(roundStateContainer.FusionUtil.StateHook(roundStateContainer, titleBackgroundColor, "titleBackgroundColor"))
+        binAdd(roundStateContainer.FusionUtil.StateHook(roundStateContainer, bodyText, "bodyText"))
+        binAdd(roundStateContainer.FusionUtil.StateHook(roundStateContainer, headerText, "headerText"))
 
         local frame = Background {
             Parent = parent,
+            BackgroundColor3 = backgroundColorSpring,
 
             [Children] = {
                 Header {
-                    Size = UDim2.fromScale(1, 0.6),
+                    TextColor3 = textColorSpring,
+                    Size = UDim2.fromScale(1, 0.5),
 
                     TextXAlignment = Enum.TextXAlignment.Center,
                     TextYAlignment = Enum.TextYAlignment.Center,
@@ -97,13 +115,17 @@ local function ItemTitleDisplay()
                     AutomaticSize = Enum.AutomaticSize.None,
 
                     Text = Computed(function()
+                        if headerText:get() then
+                            return headerText:get()
+                        end
+
                         local phase = currentPhase:get()
 
                         if phase == "Intermission" then
                             return "Intermission"
                         elseif phase == "GameOver" then
                             local winner = winnerName:get()
-                            return if winner then `{winner} won the game!` else ""
+                            return if winner then `{string.upper(winner)} WON!` else ""
                         else
                             return currentProductName:get() or ""
                         end
@@ -111,9 +133,10 @@ local function ItemTitleDisplay()
                 },
 
                 Header {
+                    TextColor3 = textColorSpring,
                     Position = UDim2.fromScale(0, 1),
                     AnchorPoint = Vector2.new(0, 1),
-                    Size = UDim2.fromScale(1, 0.4),
+                    Size = UDim2.fromScale(1, 0.5),
 
                     TextTransparency = 0.1,
                     TextXAlignment = Enum.TextXAlignment.Center,
@@ -124,12 +147,20 @@ local function ItemTitleDisplay()
                     RichText = true,
 
                     Text = Computed(function()
+                        if bodyText:get() then
+                            return bodyText:get()
+                        end
+
                         local phase = currentPhase:get()
 
                         if phase == "Intermission" then
                             return newGameMessages[RANDOM:NextInteger(1, #newGameMessages)]
                         elseif phase == "GameOver" then
-                            return "gg"
+                            if winnerPoints:get() and winnerPoints:get() > 1 then
+                                return `They had {winnerPoints:get()} points!`
+                            else
+                                return ""
+                            end
                         else
                             return currentProductInfo:get() or ""
                         end

@@ -116,7 +116,6 @@ local function RoundInfoDisplay()
                     TextScaled = true,
 
                     Text = Computed(function()
-                        print(script, "mode=", mode:get())
                         return if mode:get() then mode:get() else ""
                     end),
 
