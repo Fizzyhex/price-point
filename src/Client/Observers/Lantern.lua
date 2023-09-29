@@ -5,9 +5,9 @@ local Observers = require(ReplicatedStorage.Packages.Observers)
 
 local function Lantern()
     local stopObservingTag = Observers.observeTag("Lantern", function(lantern: BasePart)
-        local bulb: BasePart = lantern:WaitForChild("Bulb")
-        local light: PointLight = bulb:WaitForChild("PointLight")
-        local ambientLight: PointLight = bulb:WaitForChild("AmbientLight")
+        local bulb: BasePart = lantern:WaitForChild("Bulb") :: BasePart
+        local light: PointLight = bulb:WaitForChild("PointLight") :: PointLight
+        local ambientLight: PointLight = bulb:WaitForChild("AmbientLight") :: PointLight
         local originalBulbColor = bulb.Color
 
         local function EnableLantern()
@@ -24,7 +24,7 @@ local function Lantern()
             bulb.Color = originalBulbColor:Lerp(Color3.new(0, 0, 0), 0.6)
         end
 
-        local stopObservingTime = Observers.observeProperty(Lighting, "ClockTime", function(clockTime: number)
+        local stopObservingTime = Observers.observeProperty(Lighting, "ClockTime", function(clockTime)
             if lantern:GetAttribute("AlwaysOn") or clockTime >= 17.8 or clockTime <= 6.3 then
                 EnableLantern()
             else
